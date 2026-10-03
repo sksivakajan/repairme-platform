@@ -1,7 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service.js';
 import { loadAsParticipant } from './booking-access.js';
-import { CHAT_OPEN } from './booking-status.js';
+import { CHAT_OPEN, formatReference } from './booking-status.js';
 
 @Injectable()
 export class ChatService {
@@ -25,6 +25,65 @@ export class ChatService {
       ...message,
       mine: senderId === userId,
     }));
+  }
+
+  /** One conversation per booking that has a technician, newest activity first. */
+  async conversations(userId: string, customerId: string) {
+    const bookings = await this.prisma.booking.findMany({
+      where: { customerId, technicianId: { not: null } },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: {
+        id: true,
+        referenceNumber: true,
+        status: true,
+        createdAt: true,
+        category: { select: { name: true, iconKey: true } },
+        problemType: { select: { name: true } },
+        technician: { select: { displayName: true } },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { body: true, senderId: true, createdAt: true },
+        },
+      },
+    });
+    if (bookings.length === 0) return [];
+
+    const unread = await this.prisma.chatMessage.groupBy({
+      by: ['bookingId'],
+      where: {
+        bookingId: { in: bookings.map((booking) => booking.id) },
+        senderId: { not: userId },
+        readAt: null,
+      },
+      _count: { _all: true },
+    });
+    const unreadByBooking = new Map(
+      unread.map((row) => [row.bookingId, row._count._all]),
+    );
+
+    return bookings
+      .map((booking) => {
+        const last = booking.messages[0] ?? null;
+        return {
+          bookingId: booking.id,
+          reference: formatReference(booking.referenceNumber),
+          title: booking.problemType?.name ?? booking.category.name,
+          categoryIcon: booking.category.iconKey,
+          status: booking.status,
+          technicianName: booking.technician?.displayName ?? 'Technician',
+          chatOpen: CHAT_OPEN.includes(booking.status),
+          lastMessage: last && {
+            body: last.body,
+            mine: last.senderId === userId,
+            createdAt: last.createdAt,
+          },
+          unreadCount: unreadByBooking.get(booking.id) ?? 0,
+          lastActivityAt: last?.createdAt ?? booking.createdAt,
+        };
+      })
+      .sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime());
   }
 
   async send(userId: string, bookingId: string, body: string) {

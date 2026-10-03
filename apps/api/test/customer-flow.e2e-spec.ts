@@ -81,6 +81,15 @@ describe('Customer booking flow (e2e)', () => {
     problemTypeId = electrical.problemTypes[0].id;
   });
 
+  it('lists top-rated technicians by first name only', async () => {
+    await http().get('/v1/technicians/top-rated').expect(401);
+    const res = await http().get('/v1/technicians/top-rated').set(auth).expect(200);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0]).toHaveProperty('firstName');
+    expect(res.body[0]).not.toHaveProperty('displayName');
+    expect(res.body[0]).not.toHaveProperty('id');
+  });
+
   it('rejects unauthenticated and malformed credentials', async () => {
     await http().get('/v1/me').expect(401);
     await http().get('/v1/me').set('Authorization', 'Dev 0771234567').expect(401);
@@ -197,6 +206,14 @@ describe('Customer booking flow (e2e)', () => {
     await http().post(`/v1/bookings/${id}/messages`).set(auth).send({ body: 'The gate is blue.' }).expect(201);
     const chat = await http().get(`/v1/bookings/${id}/messages`).set(auth).expect(200);
     expect(chat.body.map((m: { mine: boolean }) => m.mine)).toEqual([false, true]);
+    const conversations = await http().get('/v1/conversations').set(auth).expect(200);
+    expect(conversations.body[0]).toMatchObject({
+      bookingId: id,
+      technicianName: 'Kasun Perera',
+      chatOpen: true,
+      unreadCount: 0,
+      lastMessage: { body: 'The gate is blue.', mine: true },
+    });
 
     // Travel and arrival with the job code.
     await http().post(`/v1/dev/bookings/${id}/en-route`).send({ etaMinutes: 12 }).expect(204);

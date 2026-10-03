@@ -7,7 +7,10 @@ import 'data/models.dart';
 import 'data/repository.dart';
 import 'screens/auth_screens.dart';
 import 'screens/booking_screens.dart';
+import 'screens/home_screen.dart';
+import 'screens/messages_screen.dart';
 import 'screens/request_screens.dart';
+import 'screens/splash_screen.dart';
 import 'screens/tab_screens.dart';
 import 'theme/app_theme.dart';
 import 'widgets/common.dart';
@@ -23,7 +26,15 @@ class RepairMeApp extends StatefulWidget {
 }
 
 class _RepairMeAppState extends State<RepairMeApp> {
-  late final GoRouter _router = _buildRouter(widget.session);
+  /// The splash animation plays once per app start before any other screen.
+  final _splashDone = ValueNotifier(false);
+  late final GoRouter _router = _buildRouter(widget.session, _splashDone);
+
+  @override
+  void dispose() {
+    _splashDone.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +53,15 @@ class _RepairMeAppState extends State<RepairMeApp> {
 
 const _authRoutes = {'/onboarding', '/phone', '/otp'};
 
-GoRouter _buildRouter(Session session) {
+/// Fades in, used for the screens that replace the splash.
+Page<void> _fade(GoRouterState state, Widget child) => CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 400),
+      transitionsBuilder: (context, animation, _, child) => FadeTransition(opacity: animation, child: child),
+    );
+
+GoRouter _buildRouter(Session session, ValueNotifier<bool> splashDone) {
   /// Request screens receive the draft through `extra`; without it (e.g. after
   /// a process restart) send the customer back home.
   GoRoute requestRoute(String path, Widget Function(BookingDraft draft) build) => GoRoute(
@@ -56,12 +75,15 @@ GoRouter _buildRouter(Session session) {
 
   return GoRouter(
     initialLocation: '/splash',
-    refreshListenable: session,
+    refreshListenable: Listenable.merge([session, splashDone]),
     redirect: (context, state) {
       final location = state.matchedLocation;
+      if (!splashDone.value || session.status == SessionStatus.loading) {
+        return location == '/splash' ? null : '/splash';
+      }
       switch (session.status) {
         case SessionStatus.loading:
-          return location == '/splash' ? null : '/splash';
+          return null;
         case SessionStatus.signedOut:
           if (_authRoutes.contains(location)) return null;
           return session.hasOnboarded ? '/phone' : '/onboarding';
@@ -71,23 +93,31 @@ GoRouter _buildRouter(Session session) {
       }
     },
     routes: [
-      GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
-      GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
-      GoRoute(path: '/phone', builder: (_, _) => const PhoneScreen()),
+      GoRoute(
+        path: '/splash',
+        pageBuilder: (context, state) => _fade(state, SplashScreen(onFinished: () => splashDone.value = true)),
+      ),
+      GoRoute(path: '/onboarding', pageBuilder: (context, state) => _fade(state, const OnboardingScreen())),
+      GoRoute(path: '/phone', pageBuilder: (context, state) => _fade(state, const PhoneScreen())),
       GoRoute(path: '/otp', builder: (_, _) => const OtpScreen()),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, shell) => HomeShell(shell: shell),
+        pageBuilder: (context, state, shell) => _fade(state, HomeShell(shell: shell)),
         branches: [
           StatefulShellBranch(routes: [GoRoute(path: '/home', builder: (_, _) => const HomeScreen())]),
           StatefulShellBranch(routes: [GoRoute(path: '/bookings', builder: (_, _) => const BookingsScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/support', builder: (_, _) => const SupportScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/messages', builder: (_, _) => const MessagesScreen())]),
           StatefulShellBranch(routes: [GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen())]),
         ],
       ),
       GoRoute(
         path: '/services',
-        builder: (context, state) => ServicesScreen(type: state.extra is BookingType ? state.extra! as BookingType : null),
+        builder: (context, state) => ServicesScreen(
+          type: state.extra is BookingType ? state.extra! as BookingType : null,
+          focusSearch: state.uri.queryParameters['search'] == '1',
+        ),
       ),
+      GoRoute(path: '/technicians', builder: (_, _) => const TopTechniciansScreen()),
+      GoRoute(path: '/support', builder: (_, _) => const SupportScreen()),
       GoRoute(path: '/notifications', builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: '/addresses', builder: (_, _) => const AddressesScreen()),
       requestRoute('/request/type', (draft) => BookingTypeScreen(draft: draft)),

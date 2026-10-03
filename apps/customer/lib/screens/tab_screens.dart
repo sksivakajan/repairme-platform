@@ -7,7 +7,7 @@ import '../data/models.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 
-/// Bottom navigation shell: Home, Bookings, Support, Profile.
+/// Bottom navigation shell: Home, Bookings, Messages, Profile.
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key, required this.shell});
 
@@ -17,217 +17,19 @@ class HomeShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: shell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: shell.currentIndex,
-        onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long_rounded), label: 'Bookings'),
-          NavigationDestination(icon: Icon(Icons.support_agent_outlined), selectedIcon: Icon(Icons.support_agent_rounded), label: 'Support'),
-          NavigationDestination(icon: Icon(Icons.person_outline_rounded), selectedIcon: Icon(Icons.person_rounded), label: 'Profile'),
-        ],
-      ),
-    );
-  }
-}
-
-String _greeting() {
-  final hour = DateTime.now().hour;
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-}
-
-/// C05 · Home.
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  Future<(Catalog, Profile, List<BookingSummary>)> _load(BuildContext context) async {
-    final repo = context.repo;
-    final results = await Future.wait([repo.catalog(), repo.profile(), repo.bookings('active')]);
-    return (results[0] as Catalog, results[1] as Profile, results[2] as List<BookingSummary>);
-  }
-
-  /// Booking type first (C05 cards) then service (C06).
-  static void startRequest(BuildContext context, BookingType type) =>
-      context.push('/services', extra: type);
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: AsyncView(
-        load: () => _load(context),
-        builder: (context, data, reload) {
-          final (catalog, profile, active) = data;
-          final popular = catalog.categories.where((c) => c.isPopular).toList();
-          return RefreshIndicator(
-            onRefresh: reload,
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-              children: [
-                Row(
-                  children: [
-                    const Text('Repair Me', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.8)),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () async {
-                        await context.push('/notifications');
-                        await reload();
-                      },
-                      icon: Badge(
-                        isLabelVisible: profile.unreadNotifications > 0,
-                        label: Text('${profile.unreadNotifications}'),
-                        backgroundColor: AppColors.danger,
-                        child: const Icon(Icons.notifications_none_rounded),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  profile.firstName.isEmpty ? _greeting() : '${_greeting()}, ${profile.firstName}',
-                  style: const TextStyle(color: AppColors.muted, fontSize: 15),
-                ),
-                const SizedBox(height: 4),
-                Text('What do you need help with?', style: Theme.of(context).textTheme.headlineSmall),
-                for (final booking in active.take(2)) ...[
-                  const SizedBox(height: 14),
-                  ActiveBookingBanner(booking: booking, onReturn: reload),
-                ],
-                const SizedBox(height: 18),
-                _EmergencyCard(online: catalog.onlineTechnicians),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _TypeCard(
-                        label: 'SCHEDULE',
-                        title: 'Choose a time',
-                        icon: Icons.calendar_month_rounded,
-                        onTap: () => startRequest(context, BookingType.scheduled),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _TypeCard(
-                        label: 'INSPECTION',
-                        title: 'Measure and quote',
-                        icon: Icons.straighten_rounded,
-                        onTap: () => startRequest(context, BookingType.inspection),
-                      ),
-                    ),
-                  ],
-                ),
-                SectionTitle(
-                  'Popular services',
-                  trailing: TextButton(onPressed: () => context.push('/services'), child: const Text('See all')),
-                ),
-                GridView.count(
-                  crossAxisCount: 3,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1,
-                  children: [
-                    for (final category in popular)
-                      Card(
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () => context.push('/request/type', extra: BookingDraft(category: category, type: BookingType.emergency)),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CategoryBadge(iconKey: category.iconKey),
-                              const SizedBox(height: 8),
-                              Text(category.name, textAlign: TextAlign.center,
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _EmergencyCard extends StatelessWidget {
-  const _EmergencyCard({required this.online});
-
-  final int online;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.ink,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => HomeScreen.startRequest(context, BookingType.emergency),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Pill(label: 'EMERGENCY', background: AppColors.yellow, foreground: AppColors.ink),
-                    const SizedBox(height: 12),
-                    const Text('Get help as soon as possible',
-                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 8),
-                    Text('Avg. arrival 18 min · $online online nearby',
-                        style: const TextStyle(color: Color(0xFFBDBBB3), fontSize: 13)),
-                  ],
-                ),
-              ),
-              Container(
-                width: 56,
-                height: 56,
-                decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
-                child: const Icon(Icons.bolt_rounded, size: 32),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TypeCard extends StatelessWidget {
-  const _TypeCard({required this.label, required this.title, required this.icon, required this.onTap});
-
-  final String label;
-  final String title;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, size: 28),
-              const SizedBox(height: 14),
-              Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: AppColors.muted)),
-              const SizedBox(height: 2),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-            ],
-          ),
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
+        child: NavigationBar(
+          selectedIndex: shell.currentIndex,
+          onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
+          destinations: const [
+            NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Home'),
+            NavigationDestination(
+                icon: Icon(Icons.calendar_today_outlined), selectedIcon: Icon(Icons.calendar_month_rounded), label: 'Bookings'),
+            NavigationDestination(
+                icon: Icon(Icons.chat_bubble_outline_rounded), selectedIcon: Icon(Icons.chat_bubble_rounded), label: 'Messages'),
+            NavigationDestination(icon: Icon(Icons.person_outline_rounded), selectedIcon: Icon(Icons.person_rounded), label: 'Profile'),
+          ],
         ),
       ),
     );
@@ -278,10 +80,13 @@ class ActiveBookingBanner extends StatelessWidget {
 
 /// C06 · Choose a service.
 class ServicesScreen extends StatefulWidget {
-  const ServicesScreen({super.key, this.type});
+  const ServicesScreen({super.key, this.type, this.focusSearch = false});
 
   /// Set when the customer already chose Emergency / Schedule / Inspection.
   final BookingType? type;
+
+  /// Opened from the home search bar: start typing straight away.
+  final bool focusSearch;
 
   @override
   State<ServicesScreen> createState() => _ServicesScreenState();
@@ -305,7 +110,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
             padding: const EdgeInsets.all(20),
             children: [
               TextField(
-                decoration: const InputDecoration(hintText: 'Search services', prefixIcon: Icon(Icons.search_rounded)),
+                autofocus: widget.focusSearch,
+                decoration: const InputDecoration(hintText: 'Search for a service...', prefixIcon: Icon(Icons.search_rounded)),
                 onChanged: (value) => setState(() => _query = value),
               ),
               const SizedBox(height: 16),
@@ -798,6 +604,13 @@ class ProfileScreen extends StatelessWidget {
                     title: const Text('Notifications'),
                     trailing: const Icon(Icons.chevron_right_rounded),
                     onTap: () => context.push('/notifications'),
+                  ),
+                  const Divider(indent: 16, endIndent: 16),
+                  ListTile(
+                    leading: const Icon(Icons.support_agent_outlined),
+                    title: const Text('Help & support'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.push('/support'),
                   ),
                   const Divider(indent: 16, endIndent: 16),
                   ListTile(

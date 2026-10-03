@@ -7,48 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../config/env.dart';
 import '../core/format.dart';
 import '../theme/app_theme.dart';
+import '../widgets/brand.dart';
 import '../widgets/common.dart';
-
-/// C01 · Splash, shown while the session loads.
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.yellow,
-      body: Center(child: BrandMark(large: true)),
-    );
-  }
-}
-
-class BrandMark extends StatelessWidget {
-  const BrandMark({super.key, this.large = false});
-
-  final bool large;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: large ? 84 : 48,
-          height: large ? 84 : 48,
-          decoration: BoxDecoration(color: AppColors.ink, borderRadius: BorderRadius.circular(large ? 24 : 14)),
-          child: Icon(Icons.build_rounded, color: AppColors.yellow, size: large ? 44 : 26),
-        ),
-        const SizedBox(height: 16),
-        Text('Repair Me',
-            style: TextStyle(fontSize: large ? 34 : 22, fontWeight: FontWeight.w900, letterSpacing: -1)),
-        if (large) ...[
-          const SizedBox(height: 6),
-          const Text('Fixed. Fast. Verified.', style: TextStyle(fontWeight: FontWeight.w600)),
-        ],
-      ],
-    );
-  }
-}
 
 /// C02 · Onboarding.
 class OnboardingScreen extends StatefulWidget {
@@ -80,6 +40,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
   ];
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _finish() async {
     await context.session.markOnboarded();
     if (mounted) context.go('/phone');
@@ -92,9 +58,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(onPressed: _finish, child: const Text('Skip')),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 8, 0),
+              child: Row(
+                children: [
+                  const RepairMeLogo(size: 32),
+                  const SizedBox(width: 8),
+                  const Wordmark(fontSize: 20),
+                  const Spacer(),
+                  TextButton(onPressed: _finish, child: const Text('Skip')),
+                ],
+              ),
             ),
             Expanded(
               child: PageView(
@@ -119,7 +93,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Text(page.title, style: Theme.of(context).textTheme.headlineMedium),
                           const SizedBox(height: 12),
                           Text(page.body,
-                              style: const TextStyle(fontSize: 16, color: AppColors.inkSoft, height: 1.45)),
+                              style: const TextStyle(fontSize: 16, color: AppColors.inkSoft, height: 1.5)),
                         ],
                       ),
                     ),
@@ -159,6 +133,135 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
+/// The yellow "Welcome to RepairMe" header of the sign-in screens.
+class AuthHeader extends StatelessWidget {
+  const AuthHeader({super.key, this.onBack});
+
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFCB2F), Color(0xFFFFB703)],
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
+      ),
+      child: Stack(
+        children: [
+          Positioned(top: -70, left: -60, child: _circle(200, Colors.white.withValues(alpha: 0.16))),
+          Positioned(bottom: -80, right: -50, child: _circle(210, const Color(0xFFF2A100).withValues(alpha: 0.35))),
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 34),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 40,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: onBack == null
+                          ? null
+                          : IconButton(
+                              onPressed: onBack,
+                              icon: const Icon(Icons.arrow_back_rounded),
+                              tooltip: 'Back',
+                            ),
+                    ),
+                  ),
+                  const AppIconBadge(size: 78),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Welcome to RepairMe',
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700, letterSpacing: -0.6),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Home repairs, made simple',
+                    style: TextStyle(fontSize: 14, color: AppColors.inkSoft),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _circle(double size, Color color) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      );
+}
+
+class _AuthLayout extends StatelessWidget {
+  const _AuthLayout({required this.title, required this.subtitle, required this.children, this.onBack});
+
+  final String title;
+  final Widget subtitle;
+  final List<Widget> children;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            AuthHeader(onBack: onBack),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 4),
+                  DefaultTextStyle.merge(
+                    style: const TextStyle(fontSize: 13, color: AppColors.muted),
+                    child: subtitle,
+                  ),
+                  const SizedBox(height: 18),
+                  ...children,
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DevLoginHint extends StatelessWidget {
+  const _DevLoginHint();
+
+  @override
+  Widget build(BuildContext context) {
+    if (Env.useFirebase) return const SizedBox.shrink();
+    return const Padding(
+      padding: EdgeInsets.only(top: 18),
+      child: Center(
+        child: Pill(
+          label: 'DEVELOPMENT LOGIN · CODE ${Env.devOtpCode}',
+          background: AppColors.yellowSoft,
+          foreground: AppColors.inkSoft,
+        ),
+      ),
+    );
+  }
+}
+
 /// C03 · Phone number.
 class PhoneScreen extends StatefulWidget {
   const PhoneScreen({super.key});
@@ -169,11 +272,19 @@ class PhoneScreen extends StatefulWidget {
 
 class _PhoneScreenState extends State<PhoneScreen> {
   final _controller = TextEditingController();
+  final _focus = FocusNode();
   String? _phone;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
@@ -184,65 +295,77 @@ class _PhoneScreenState extends State<PhoneScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Text('Enter your mobile number', style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 8),
-          const Text('We will send a 6-digit code by SMS to confirm it is you.',
-              style: TextStyle(color: AppColors.muted, fontSize: 15)),
-          const SizedBox(height: 28),
-          const Text('Mobile number', style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _controller,
-            autofocus: true,
-            keyboardType: TextInputType.phone,
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')), LengthLimitingTextInputFormatter(12)],
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, letterSpacing: 1),
-            decoration: const InputDecoration(
-              hintText: '77 123 4567',
-              prefixIcon: Padding(
-                padding: EdgeInsets.only(left: 16, right: 8),
-                child: Text('+94', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-              ),
-              prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
-            ),
-            onChanged: (value) => setState(() => _phone = toSriLankaE164(value)),
+    final active = _focus.hasFocus || _controller.text.isNotEmpty;
+    return _AuthLayout(
+      title: 'Enter your mobile number',
+      subtitle: const Text("We'll send you a one-time code"),
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          height: 60,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: active ? AppColors.ink : AppColors.line, width: 1.5),
           ),
-          const SizedBox(height: 12),
-          const Row(
+          child: Row(
             children: [
-              Icon(Icons.lock_outline_rounded, size: 16, color: AppColors.muted),
-              SizedBox(width: 6),
+              const SizedBox(width: 16),
+              const Text('🇱🇰', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              const Text('+94', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(width: 14),
+              Container(width: 1, height: 28, color: AppColors.line),
+              const SizedBox(width: 14),
               Expanded(
-                child: Text('Your number is only shared with the technician assigned to your booking.',
-                    style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focus,
+                  keyboardType: TextInputType.phone,
+                  autofillHints: const [AutofillHints.telephoneNumberNational],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
+                    LengthLimitingTextInputFormatter(12),
+                  ],
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: 0.5),
+                  decoration: const InputDecoration(
+                    hintText: '77 123 4567',
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    isCollapsed: true,
+                  ),
+                  onChanged: (value) => setState(() => _phone = toSriLankaE164(value)),
+                  onSubmitted: (_) {
+                    if (_phone != null) _send();
+                  },
+                ),
               ),
+              const SizedBox(width: 12),
             ],
           ),
-          if (!Env.useFirebase) ...[
-            const SizedBox(height: 20),
-            const Pill(
-                label: 'DEVELOPMENT LOGIN · CODE ${Env.devOtpCode}',
-                background: AppColors.yellowSoft,
-                foreground: AppColors.ink),
-          ],
-        ],
-      ),
-      bottomNavigationBar: BottomAction(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            BusyButton(label: 'Send code', onPressed: _phone == null ? null : _send),
-            const SizedBox(height: 10),
-            const Text('By continuing you agree to the Terms and Privacy Policy',
-                style: TextStyle(color: AppColors.muted, fontSize: 12)),
-          ],
         ),
-      ),
+        const SizedBox(height: 16),
+        BusyButton(
+          label: 'Send code',
+          trailingIcon: Icons.arrow_forward_rounded,
+          onPressed: _phone == null ? null : _send,
+        ),
+        const SizedBox(height: 16),
+        const Text.rich(
+          TextSpan(
+            text: 'By continuing you agree to our ',
+            children: [
+              TextSpan(text: 'Terms & Privacy', style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w500)),
+            ],
+          ),
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppColors.muted, fontSize: 12),
+        ),
+        const _DevLoginHint(),
+      ],
     );
   }
 }
@@ -256,13 +379,18 @@ class OtpScreen extends StatefulWidget {
 }
 
 class _OtpScreenState extends State<OtpScreen> {
+  static const _length = 6;
+
   final _controller = TextEditingController();
+  final _focus = FocusNode();
   Timer? _timer;
   int _secondsLeft = 30;
+  bool _verifying = false;
 
   @override
   void initState() {
     super.initState();
+    _focus.addListener(() => setState(() {}));
     _startTimer();
   }
 
@@ -279,10 +407,25 @@ class _OtpScreenState extends State<OtpScreen> {
   void dispose() {
     _timer?.cancel();
     _controller.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
-  Future<void> _verify() => context.session.verifyCode(_controller.text);
+  Future<void> _verify() async {
+    if (_verifying || _controller.text.length != _length) return;
+    setState(() => _verifying = true);
+    try {
+      // On success the router leaves this screen.
+      await context.session.verifyCode(_controller.text);
+    } catch (error) {
+      if (!mounted) return;
+      context.showError(error);
+      _controller.clear();
+      _focus.requestFocus();
+    } finally {
+      if (mounted) setState(() => _verifying = false);
+    }
+  }
 
   Future<void> _resend() async {
     try {
@@ -297,49 +440,107 @@ class _OtpScreenState extends State<OtpScreen> {
   @override
   Widget build(BuildContext context) {
     final phone = context.session.phoneNumber ?? '';
-    return Scaffold(
-      appBar: AppBar(),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Text('Enter the code', style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 8),
-          Row(
+    final code = _controller.text;
+    return _AuthLayout(
+      title: 'Enter verification code',
+      onBack: () => context.pop(),
+      subtitle: Text('Sent to ${prettyPhone(phone)}'),
+      children: [
+        SizedBox(
+          height: 58,
+          child: Stack(
             children: [
-              Text('Sent to ${prettyPhone(phone)} · ', style: const TextStyle(color: AppColors.muted)),
-              GestureDetector(
-                onTap: () => context.pop(),
-                child: const Text('Edit', style: TextStyle(fontWeight: FontWeight.w700, decoration: TextDecoration.underline)),
+              // The real input sits underneath and receives the taps.
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0,
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focus,
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
+                    autofillHints: const [AutofillHints.oneTimeCode],
+                    enableInteractiveSelection: false,
+                    showCursor: false,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(_length),
+                    ],
+                    decoration: const InputDecoration(filled: false, border: InputBorder.none),
+                    onChanged: (value) {
+                      setState(() {});
+                      if (value.length == _length) _verify();
+                    },
+                  ),
+                ),
+              ),
+              IgnorePointer(
+                child: Row(
+                  children: [
+                    for (var i = 0; i < _length; i++)
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: i == 0 ? 0 : 5, right: i == _length - 1 ? 0 : 5),
+                          child: _DigitBox(
+                            digit: i < code.length ? code[i] : '',
+                            active: _focus.hasFocus && (i == code.length || (i == _length - 1 && code.length == _length)),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 28),
-          TextField(
-            controller: _controller,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-            maxLength: 6,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: 16),
-            decoration: const InputDecoration(counterText: '', hintText: '······'),
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: 16),
-          Center(
-            child: _secondsLeft > 0
-                ? Text('Resend code in 0:${_secondsLeft.toString().padLeft(2, '0')}',
-                    style: const TextStyle(color: AppColors.muted))
-                : TextButton(onPressed: _resend, child: const Text('Resend code')),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomAction(
-        child: BusyButton(
-          label: 'Verify and continue',
-          onPressed: _controller.text.length == 6 ? _verify : null,
+        ),
+        const SizedBox(height: 18),
+        FilledButton(
+          onPressed: code.length == _length && !_verifying ? _verify : null,
+          child: _verifying
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                )
+              : const Text('Verify'),
+        ),
+        const SizedBox(height: 12),
+        Center(
+          child: _secondsLeft > 0
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text('Resend code in 0:${_secondsLeft.toString().padLeft(2, '0')}',
+                      style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                )
+              : TextButton(onPressed: _resend, child: const Text('Resend code')),
+        ),
+        const _DevLoginHint(),
+      ],
+    );
+  }
+}
+
+class _DigitBox extends StatelessWidget {
+  const _DigitBox({required this.digit, required this.active});
+
+  final String digit;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    final filled = digit.isNotEmpty;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: filled ? AppColors.ink : (active ? AppColors.yellowDeep : AppColors.line),
+          width: filled || active ? 1.6 : 1.2,
         ),
       ),
+      child: Text(digit, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
     );
   }
 }

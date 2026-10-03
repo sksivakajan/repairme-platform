@@ -251,7 +251,7 @@ class Payment {
 }
 
 class BookingDetail extends BookingSummary {
-  BookingDetail.fromJson(Map<String, dynamic> json)
+  BookingDetail.fromJson(super.json)
       : description = json['description'] as String,
         symptoms = (json['symptoms'] as List).cast<String>(),
         address = AddressInput(
@@ -278,7 +278,7 @@ class BookingDetail extends BookingSummary {
         canCancel = json['canCancel'] as bool,
         canChat = json['canChat'] as bool,
         canAddPhotos = json['canAddPhotos'] as bool,
-        super.fromJson(json);
+        super.fromJson();
 
   final String description;
   final List<String> symptoms;
@@ -351,4 +351,74 @@ class SupportTicket {
   final String? bookingReference;
   final String subject;
   final String status;
+}
+
+/// A best-rated technician shown on the home screen (first name only).
+class TopTechnician {
+  TopTechnician.fromJson(Map<String, dynamic> json)
+      : firstName = json['firstName'] as String,
+        categorySlug = json['categorySlug'] as String?,
+        categoryName = json['categoryName'] as String?,
+        rating = _num(json['rating']) ?? 0,
+        ratingCount = json['ratingCount'] as int,
+        jobsCompleted = json['jobsCompleted'] as int;
+
+  final String firstName;
+  final String? categorySlug;
+  final String? categoryName;
+  final double rating;
+  final int ratingCount;
+  final int jobsCompleted;
+
+  /// The trade as a job title: "Electrician", "Plumber"…
+  String get trade => switch (categorySlug) {
+        'electrical' || 'fans-lights' => 'Electrician',
+        'plumbing' => 'Plumber',
+        'ac' => 'AC technician',
+        'refrigerators' || 'washing-machines' => 'Appliance repair',
+        'mechanic' => 'Mechanic',
+        'doors-locks' => 'Locksmith',
+        'carpentry' => 'Carpenter',
+        'general' => 'Handyman',
+        _ => categoryName ?? 'Technician',
+      };
+}
+
+class ConversationMessage {
+  ConversationMessage.fromJson(Map<String, dynamic> json)
+      : body = json['body'] as String,
+        mine = json['mine'] as bool,
+        createdAt = DateTime.parse(json['createdAt'] as String);
+
+  final String body;
+  final bool mine;
+  final DateTime createdAt;
+}
+
+/// The chat with the technician of one booking.
+class Conversation {
+  Conversation.fromJson(Map<String, dynamic> json)
+      : bookingId = json['bookingId'] as String,
+        reference = json['reference'] as String,
+        title = json['title'] as String,
+        categoryIcon = json['categoryIcon'] as String,
+        status = json['status'] as String,
+        technicianName = json['technicianName'] as String,
+        chatOpen = json['chatOpen'] as bool,
+        lastMessage = json['lastMessage'] == null
+            ? null
+            : ConversationMessage.fromJson(json['lastMessage'] as Map<String, dynamic>),
+        unreadCount = json['unreadCount'] as int,
+        lastActivityAt = DateTime.parse(json['lastActivityAt'] as String);
+
+  final String bookingId;
+  final String reference;
+  final String title;
+  final String categoryIcon;
+  final String status;
+  final String technicianName;
+  final bool chatOpen;
+  final ConversationMessage? lastMessage;
+  final int unreadCount;
+  final DateTime lastActivityAt;
 }

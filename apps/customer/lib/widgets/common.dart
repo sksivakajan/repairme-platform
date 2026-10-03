@@ -273,7 +273,7 @@ class MapPanel extends StatelessWidget {
               ],
             ),
           ),
-          if (overlay != null) overlay!,
+          ?overlay,
         ],
       ),
     );
@@ -367,12 +367,20 @@ class BottomAction extends StatelessWidget {
 
 /// A filled button that shows a spinner while its async action runs.
 class BusyButton extends StatefulWidget {
-  const BusyButton({super.key, required this.label, required this.onPressed, this.color, this.textColor});
+  const BusyButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.color,
+    this.textColor,
+    this.trailingIcon,
+  });
 
   final String label;
   final Future<void> Function()? onPressed;
   final Color? color;
   final Color? textColor;
+  final IconData? trailingIcon;
 
   @override
   State<BusyButton> createState() => _BusyButtonState();
@@ -404,7 +412,12 @@ class _BusyButtonState extends State<BusyButton> {
               width: 22,
               height: 22,
               child: CircularProgressIndicator(strokeWidth: 2.5, color: widget.textColor ?? Colors.white))
-          : Text(widget.label),
+          : widget.trailingIcon == null
+              ? Text(widget.label)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [Text(widget.label), const SizedBox(width: 8), Icon(widget.trailingIcon, size: 20)],
+                ),
     );
   }
 }
@@ -472,7 +485,7 @@ class SectionTitle extends StatelessWidget {
       child: Row(
         children: [
           Expanded(child: Text(text, style: Theme.of(context).textTheme.titleMedium)),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );

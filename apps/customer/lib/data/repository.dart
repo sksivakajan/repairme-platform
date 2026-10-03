@@ -18,8 +18,8 @@ class Repository {
 
   Future<Profile> updateProfile({String? fullName, String? language}) async =>
       Profile.fromJson(await api.patch('/me', {
-        if (fullName != null) 'fullName': fullName,
-        if (language != null) 'language': language,
+        'fullName': ?fullName,
+        'language': ?language,
       }) as Map<String, dynamic>);
 
   Future<List<SavedAddress>> addresses() async =>
@@ -92,6 +92,16 @@ class Repository {
       api.post('/support/tickets', {
         'subject': subject,
         'message': message,
-        if (bookingId != null) 'bookingId': bookingId,
+        'bookingId': ?bookingId,
       });
+
+  Future<List<TopTechnician>> topTechnicians() async =>
+      (await api.get('/technicians/top-rated') as List)
+          .map((e) => TopTechnician.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+  Future<List<Conversation>> conversations() async =>
+      (await api.get('/conversations') as List)
+          .map((e) => Conversation.fromJson(e as Map<String, dynamic>))
+          .toList();
 }

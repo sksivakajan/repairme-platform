@@ -1,6 +1,7 @@
 // RepairMe database schema.
 // Conventions: tables are snake_case plurals, columns are snake_case,
-// primary keys are PostgreSQL-generated UUIDv7 values.
+// primary keys are PostgreSQL-generated UUIDv7 values, money is stored as
+// integer cents (LKR) to avoid floating point errors.
 
 generator client {
   provider            = "prisma-client"
@@ -13,6 +14,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── Identity ────────────────────────────────────────────────────────────────
+
 enum UserRole {
   CUSTOMER
   TECHNICIAN
@@ -21,11 +24,438 @@ enum UserRole {
   @@map("user_role")
 }
 
+enum Language {
+  EN
+  SI
+  TA
+
+  @@map("language")
+}
+
 model User {
+  id          String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  role        UserRole @default(CUSTOMER)
+  firebaseUid String?  @unique @map("firebase_uid")
+  phoneNumber String?  @unique @map("phone_number")
+  fullName    String?  @map("full_name")
+  language    Language @default(EN)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  customer      Customer?
+  technician    Technician?
+  notifications Notification[]
+  chatMessages  ChatMessage[]
+  photos        BookingPhoto[]
+  bookingEvents BookingEvent[]
+
+  @@map("users")
+}
+
+model Customer {
   id        String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  role      UserRole @default(CUSTOMER)
+  userId    String   @unique @map("user_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  @@map("users")
+  user           User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  addresses      Address[]
+  bookings       Booking[]
+  reviews        Review[]
+  supportTickets SupportTicket[]
+
+  @@map("customers")
+}
+
+enum TechnicianStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  SUSPENDED
+  REJECTED
+
+  @@map("technician_status")
+}
+
+model Technician {
+  id            String           @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId        String           @unique @map("user_id") @db.Uuid
+  displayName   String           @map("display_name")
+  status        TechnicianStatus @default(PENDING_VERIFICATION)
+  isOnline      Boolean          @default(false) @map("is_online")
+  latitude      Decimal?         @db.Decimal(9, 6)
+  longitude     Decimal?         @db.Decimal(9, 6)
+  ratingSum     Int              @default(0) @map("rating_sum")
+  ratingCount   Int              @default(0) @map("rating_count")
+  jobsCompleted Int              @default(0) @map("jobs_completed")
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user       User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  categories TechnicianService[]
+  bookings   Booking[]
+  reviews    Review[]
+
+  @@index([status, isOnline])
+  @@map("technicians")
+}
+
+// ─── Catalogue ───────────────────────────────────────────────────────────────
+
+model ServiceCategory {
+  id            String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  slug          String   @unique
+  name          String
+  description   String
+  iconKey       String   @map("icon_key")
+  sortOrder     Int      @default(0) @map("sort_order")
+  isPopular     Boolean  @default(false) @map("is_popular")
+  isActive      Boolean  @default(true) @map("is_active")
+  visitFeeCents Int      @map("visit_fee_cents")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  problemTypes ProblemType[]
+  technicians  TechnicianService[]
+  bookings     Booking[]
+
+  @@map("service_categories")
+}
+
+model ProblemType {
+  id         String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  categoryId String   @map("category_id") @db.Uuid
+  slug       String
+  name       String
+  sortOrder  Int      @default(0) @map("sort_order")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  category ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@unique([categoryId, slug])
+  @@map("problem_types")
+}
+
+model TechnicianService {
+  technicianId String @map("technician_id") @db.Uuid
+  categoryId   String @map("category_id") @db.Uuid
+
+  technician Technician      @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  category   ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([technicianId, categoryId])
+  @@map("technician_services")
+}
+
+// ─── Customer addresses ──────────────────────────────────────────────────────
+
+enum AddressLabel {
+  HOME
+  OFFICE
+  OTHER
+
+  @@map("address_label")
+}
+
+model Address {
+  id          String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  customerId  String       @map("customer_id") @db.Uuid
+  label       AddressLabel @default(HOME)
+  line1       String
+  area        String
+  city        String
+  houseNumber String?      @map("house_number")
+  landmark    String?
+  latitude    Decimal?     @db.Decimal(9, 6)
+  longitude   Decimal?     @db.Decimal(9, 6)
+  isDefault   Boolean      @default(false) @map("is_default")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  customer Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@index([customerId])
+  @@map("addresses")
+}
+
+// ─── Bookings ────────────────────────────────────────────────────────────────
+
+enum BookingType {
+  EMERGENCY
+  SCHEDULED
+  INSPECTION
+
+  @@map("booking_type")
+}
+
+enum BookingStatus {
+  SEARCHING // looking for a technician
+  OPERATOR_ASSIGNING // nobody accepted; operations team is assigning
+  ASSIGNED // technician confirmed
+  EN_ROUTE
+  ARRIVED // job code verified on site
+  AWAITING_APPROVAL // cost sent, waiting for the customer
+  IN_PROGRESS // cost approved, work under way
+  COMPLETED // work done, payment due
+  PAID
+  CANCELLED
+
+  @@map("booking_status")
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  WALLET
+
+  @@map("payment_method")
+}
+
+enum CancelledBy {
+  CUSTOMER
+  TECHNICIAN
+  OPERATOR
+
+  @@map("cancelled_by")
+}
+
+model Booking {
+  id              String        @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  referenceNumber Int           @unique @default(autoincrement()) @map("reference_number")
+  customerId      String        @map("customer_id") @db.Uuid
+  categoryId      String        @map("category_id") @db.Uuid
+  problemTypeId   String?       @map("problem_type_id") @db.Uuid
+  technicianId    String?       @map("technician_id") @db.Uuid
+  addressId       String?       @map("address_id") @db.Uuid
+  type            BookingType
+  status          BookingStatus @default(SEARCHING)
+  description     String
+  symptoms        String[]      @default([])
+  // Address snapshot: the booking keeps the address it was made with.
+  addressLine1    String        @map("address_line1")
+  addressArea     String        @map("address_area")
+  addressCity     String        @map("address_city")
+  houseNumber     String?       @map("house_number")
+  landmark        String?
+  latitude        Decimal?      @db.Decimal(9, 6)
+  longitude       Decimal?      @db.Decimal(9, 6)
+  scheduledStart  DateTime?     @map("scheduled_start") @db.Timestamptz(3)
+  scheduledEnd    DateTime?     @map("scheduled_end") @db.Timestamptz(3)
+  paymentMethod   PaymentMethod @default(CASH) @map("payment_method")
+  visitFeeCents   Int           @map("visit_fee_cents")
+  jobCode         String        @map("job_code") @db.Char(4)
+  etaMinutes      Int?          @map("eta_minutes")
+  cancelledBy     CancelledBy?  @map("cancelled_by")
+  cancelReason    String?       @map("cancel_reason")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  customer       Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  category       ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  problemType    ProblemType?    @relation(fields: [problemTypeId], references: [id], onDelete: SetNull)
+  technician     Technician?     @relation(fields: [technicianId], references: [id], onDelete: Restrict)
+  address        Address?        @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  events         BookingEvent[]
+  photos         BookingPhoto[]
+  quotations     Quotation[]
+  messages       ChatMessage[]
+  payment        Payment?
+  review         Review?
+  notifications  Notification[]
+  supportTickets SupportTicket[]
+
+  @@index([customerId, createdAt(sort: Desc)])
+  @@index([technicianId, status])
+  @@index([status])
+  @@map("bookings")
+}
+
+model BookingEvent {
+  id          String        @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  bookingId   String        @map("booking_id") @db.Uuid
+  status      BookingStatus
+  note        String?
+  actorUserId String?       @map("actor_user_id") @db.Uuid
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  actor   User?   @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId, createdAt])
+  @@map("booking_events")
+}
+
+enum PhotoKind {
+  PROBLEM
+  BEFORE
+  AFTER
+
+  @@map("photo_kind")
+}
+
+model BookingPhoto {
+  id           String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  bookingId    String    @map("booking_id") @db.Uuid
+  uploadedById String    @map("uploaded_by_id") @db.Uuid
+  kind         PhotoKind
+  storageKey   String    @unique @map("storage_key")
+  contentType  String    @map("content_type")
+  sizeBytes    Int       @map("size_bytes")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  booking    Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  uploadedBy User    @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+
+  @@index([bookingId])
+  @@map("booking_photos")
+}
+
+// ─── Quotations (cost approval) ──────────────────────────────────────────────
+
+enum QuotationStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  SUPERSEDED
+
+  @@map("quotation_status")
+}
+
+model Quotation {
+  id            String          @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  bookingId     String          @map("booking_id") @db.Uuid
+  version       Int
+  status        QuotationStatus @default(PENDING)
+  note          String?
+  visitFeeCents Int             @map("visit_fee_cents")
+  labourCents   Int             @map("labour_cents")
+  partsCents    Int             @map("parts_cents")
+  totalCents    Int             @map("total_cents")
+  decidedAt     DateTime?       @map("decided_at") @db.Timestamptz(3)
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  booking Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  items   QuotationItem[]
+
+  @@unique([bookingId, version])
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id             String @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  quotationId    String @map("quotation_id") @db.Uuid
+  description    String
+  quantity       Int
+  unitPriceCents Int    @map("unit_price_cents")
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId])
+  @@map("quotation_items")
+}
+
+// ─── Chat ────────────────────────────────────────────────────────────────────
+
+model ChatMessage {
+  id        String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  bookingId String    @map("booking_id") @db.Uuid
+  senderId  String    @map("sender_id") @db.Uuid
+  body      String
+  readAt    DateTime? @map("read_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  sender  User    @relation(fields: [senderId], references: [id], onDelete: Restrict)
+
+  @@index([bookingId, createdAt])
+  @@map("chat_messages")
+}
+
+// ─── Payments & reviews ──────────────────────────────────────────────────────
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+
+  @@map("payment_status")
+}
+
+model Payment {
+  id          String        @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  bookingId   String        @unique @map("booking_id") @db.Uuid
+  method      PaymentMethod
+  status      PaymentStatus @default(PENDING)
+  amountCents Int           @map("amount_cents")
+  providerRef String?       @map("provider_ref")
+  paidAt      DateTime?     @map("paid_at") @db.Timestamptz(3)
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+
+  @@map("payments")
+}
+
+model Review {
+  id           String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  bookingId    String   @unique @map("booking_id") @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  technicianId String   @map("technician_id") @db.Uuid
+  rating       Int
+  tags         String[] @default([])
+  comment      String?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  booking    Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  technician Technician @relation(fields: [technicianId], references: [id], onDelete: Restrict)
+
+  @@index([technicianId])
+  @@map("reviews")
+}
+
+// ─── Notifications & support ─────────────────────────────────────────────────
+
+model Notification {
+  id        String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  bookingId String?   @map("booking_id") @db.Uuid
+  title     String
+  body      String
+  readAt    DateTime? @map("read_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+enum SupportTicketStatus {
+  OPEN
+  RESOLVED
+
+  @@map("support_ticket_status")
+}
+
+model SupportTicket {
+  id              String              @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  referenceNumber Int                 @unique @default(autoincrement()) @map("reference_number")
+  customerId      String              @map("customer_id") @db.Uuid
+  bookingId       String?             @map("booking_id") @db.Uuid
+  subject         String
+  message         String
+  status          SupportTicketStatus @default(OPEN)
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@map("support_tickets")
 }

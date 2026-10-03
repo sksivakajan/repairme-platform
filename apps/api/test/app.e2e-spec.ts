@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module.js';
+import { setupApp } from './../src/setup-app.js';
 
 // Runs against the real local PostgreSQL database (docker compose up -d).
 describe('HealthController (e2e)', () => {
@@ -13,6 +14,7 @@ describe('HealthController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    setupApp(app);
     await app.init();
   });
 

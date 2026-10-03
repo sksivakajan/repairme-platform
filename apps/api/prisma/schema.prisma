@@ -1,0 +1,31 @@
+// RepairMe database schema.
+// Conventions: tables are snake_case plurals, columns are snake_case,
+// primary keys are PostgreSQL-generated UUIDv7 values.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CUSTOMER
+  TECHNICIAN
+  ADMIN
+
+  @@map("user_role")
+}
+
+model User {
+  id        String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("users")
+}

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../database/prisma.service.js';
 import type { AuthUser, VerifiedIdentity } from './auth-user.js';
 
@@ -12,6 +13,22 @@ export class AuthService {
    * operations team, not by self sign-up).
    */
   async resolveUser(identity: VerifiedIdentity): Promise<AuthUser> {
+    try {
+      return await this.upsertUser(identity);
+    } catch (error) {
+      // A new user's first requests arrive in parallel and race to create the
+      // row; the loser hits the unique constraint and the retry updates it.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        return this.upsertUser(identity);
+      }
+      throw error;
+    }
+  }
+
+  private async upsertUser(identity: VerifiedIdentity): Promise<AuthUser> {
     const user = await this.prisma.user.upsert({
       where: { firebaseUid: identity.firebaseUid },
       update:

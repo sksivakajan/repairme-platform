@@ -44,7 +44,7 @@ class ApiClient {
     return {
       if (json) 'Content-Type': 'application/json',
       'Accept': 'application/json',
-      if (auth != null) 'Authorization': auth,
+      'Authorization': ?auth,
     };
   }
 

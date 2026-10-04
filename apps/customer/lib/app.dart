@@ -76,6 +76,7 @@ class _RepairMeAppState extends State<RepairMeApp> with WidgetsBindingObserver {
       child: MaterialApp.router(
         title: 'RepairMe',
         debugShowCheckedModeBanner: false,
+        scrollBehavior: const _NoStretchScrollBehavior(),
         theme: buildTheme(brightness),
         routerConfig: _router,
       ),
@@ -167,4 +168,13 @@ GoRouter _buildRouter(Session session, ValueNotifier<bool> splashDone) {
       bookingRoute('/booking/:id/rate', (id) => RatingScreen(id: id)),
     ],
   );
+}
+
+/// Keeps screens still at the scroll edges: no Android stretch effect when
+/// pulling down (pull-to-refresh only shows its spinner).
+class _NoStretchScrollBehavior extends MaterialScrollBehavior {
+  const _NoStretchScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;
 }

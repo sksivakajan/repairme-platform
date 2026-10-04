@@ -718,6 +718,10 @@ class _ServiceTile extends StatelessWidget {
                     // A slightly deeper tint than yellowSoft so the icons are not too bright.
                     color: AppColors.isDark ? AppColors.yellowSoft : const Color(0xFFFCE6AE),
                     borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: AppColors.isDark ? AppColors.ink.withValues(alpha: 0.35) : AppColors.black,
+                      width: 1.2,
+                    ),
                   ),
                   child: Icon(
                     categoryIcon(category.iconKey),

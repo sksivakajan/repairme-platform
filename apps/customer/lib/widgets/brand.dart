@@ -119,3 +119,43 @@ class AppIconBadge extends StatelessWidget {
     );
   }
 }
+
+/// A service icon in the brand's premium style: gold icon on a glossy black
+/// tile with a thin gold edge.
+class PremiumIcon extends StatelessWidget {
+  const PremiumIcon({super.key, required this.icon, this.size = 52});
+
+  final IconData icon;
+  final double size;
+
+  static const _gold = [Color(0xFFFFD54A), Color(0xFFE0A100)];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(size * 0.3),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF34342F), Color(0xFF0B0B0A)],
+        ),
+        border: Border.all(color: const Color(0xFFE0A100).withValues(alpha: 0.55), width: 1),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.22), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: ShaderMask(
+        blendMode: BlendMode.srcIn,
+        shaderCallback: (bounds) => const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: _gold,
+        ).createShader(bounds),
+        child: Icon(icon, size: size * 0.5, color: Colors.white),
+      ),
+    );
+  }
+}

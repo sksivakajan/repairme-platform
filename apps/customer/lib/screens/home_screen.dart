@@ -711,7 +711,7 @@ class _ServiceTile extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                PremiumIcon(icon: categoryIcon(category.iconKey)),
+                _ServiceArt(iconKey: category.iconKey),
                 const SizedBox(height: 8),
                 // Room for two lines on every tile keeps the icons aligned.
                 SizedBox(
@@ -892,5 +892,28 @@ class TopTechniciansScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// 3D illustration for the main services; other services use [PremiumIcon].
+class _ServiceArt extends StatelessWidget {
+  const _ServiceArt({required this.iconKey});
+
+  final String iconKey;
+
+  static const _illustrated = {'electrical', 'plumbing', 'ac', 'washing-machine', 'mechanic', 'general'};
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_illustrated.contains(iconKey)) return PremiumIcon(icon: categoryIcon(iconKey));
+    final image = Image.asset(
+      'assets/images/services/$iconKey.png',
+      width: 66,
+      height: 66,
+      filterQuality: FilterQuality.medium,
+    );
+    // The artwork has a white background: on dark cards give it a white tile.
+    if (!AppColors.isDark) return image;
+    return ClipRRect(borderRadius: BorderRadius.circular(16), child: ColoredBox(color: Colors.white, child: image));
   }
 }

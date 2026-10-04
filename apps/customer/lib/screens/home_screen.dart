@@ -906,14 +906,12 @@ class _ServiceArt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!_illustrated.contains(iconKey)) return PremiumIcon(icon: categoryIcon(iconKey));
-    final image = Image.asset(
+    // Transparent artwork, so it sits on the card in light and dark mode.
+    return Image.asset(
       'assets/images/services/$iconKey.png',
       width: 66,
       height: 66,
       filterQuality: FilterQuality.medium,
     );
-    // The artwork has a white background: on dark cards give it a white tile.
-    if (!AppColors.isDark) return image;
-    return ClipRRect(borderRadius: BorderRadius.circular(16), child: ColoredBox(color: Colors.white, child: image));
   }
 }

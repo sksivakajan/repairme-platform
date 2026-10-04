@@ -320,10 +320,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                   focusNode: _focus,
                   keyboardType: TextInputType.phone,
                   autofillHints: const [AutofillHints.telephoneNumberNational],
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
-                    LengthLimitingTextInputFormatter(12),
-                  ],
+                  inputFormatters: [SriLankaPhoneFormatter()],
                   style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, letterSpacing: 0.5),
                   decoration: const InputDecoration(
                     hintText: '77 123 4567',
@@ -544,6 +541,42 @@ class _DigitBox extends StatelessWidget {
         ),
       ),
       child: Text(digit, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+    );
+  }
+}
+
+/// Formats a Sri Lankan mobile number while typing: "77 123 4567", or
+/// "077 123 4567" when it starts with 0.
+class SriLankaPhoneFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    var digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final leadingZero = digits.startsWith('0');
+    digits = digits.substring(0, digits.length.clamp(0, leadingZero ? 10 : 9));
+
+    // Groups: 2-3-4 digits, or 3-3-4 with a leading 0.
+    final first = leadingZero ? 3 : 2;
+    final buffer = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i == first || i == first + 3) buffer.write(' ');
+      buffer.write(digits[i]);
+    }
+    final text = buffer.toString();
+
+    // Keep the cursor after the same number of digits as before formatting.
+    final digitsBeforeCursor = newValue.text
+        .substring(0, newValue.selection.end.clamp(0, newValue.text.length))
+        .replaceAll(RegExp(r'\D'), '')
+        .length;
+    var offset = 0;
+    var seen = 0;
+    while (offset < text.length && seen < digitsBeforeCursor) {
+      if (text[offset] != ' ') seen++;
+      offset++;
+    }
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: offset),
     );
   }
 }

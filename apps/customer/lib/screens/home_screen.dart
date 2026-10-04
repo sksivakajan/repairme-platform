@@ -307,10 +307,30 @@ class _PromoCarousel extends StatefulWidget {
 }
 
 class _PromoCarouselState extends State<_PromoCarousel> {
-  static const _count = 2;
   final _controller = PageController();
   Timer? _timer;
   int _page = 0;
+
+  List<Widget> _slides(BuildContext context) => [
+        const _BrandBanner(),
+        const _ImageBanner(asset: 'assets/images/banner_team.jpg', label: 'RepairMe team', alignment: Alignment.center),
+        _ImageBanner(
+          asset: 'assets/images/banner_emergency.jpg',
+          label: 'Need help right now? Get emergency help',
+          onTap: () => HomeScreen.startRequest(context, BookingType.emergency),
+        ),
+        _ImageBanner(
+          asset: 'assets/images/banner_schedule.jpg',
+          label: 'Repair it on your time. Schedule a repair',
+          onTap: () => HomeScreen.startRequest(context, BookingType.scheduled),
+        ),
+        _ImageBanner(
+          asset: 'assets/images/banner_measure.jpg',
+          label: 'Planning something bigger? Request a measurement',
+          onTap: () => HomeScreen.startRequest(context, BookingType.inspection),
+        ),
+        _EmergencyBanner(onlineTechnicians: widget.onlineTechnicians),
+      ];
 
   @override
   void initState() {
@@ -318,7 +338,7 @@ class _PromoCarouselState extends State<_PromoCarousel> {
     _timer = Timer.periodic(const Duration(seconds: 6), (_) {
       if (!_controller.hasClients) return;
       _controller.animateToPage(
-        (_page + 1) % _count,
+        (_page + 1) % _slides(context).length,
         duration: const Duration(milliseconds: 450),
         curve: Curves.easeInOut,
       );
@@ -334,41 +354,64 @@ class _PromoCarouselState extends State<_PromoCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final onDark = _page == 0;
-    return SizedBox(
-      height: 172,
-      child: Stack(
-        children: [
-          PageView(
+    final slides = _slides(context);
+    return Column(
+      children: [
+        SizedBox(
+          height: 172,
+          child: PageView(
             controller: _controller,
             onPageChanged: (page) => setState(() => _page = page),
-            children: [
-              const _BrandBanner(),
-              _EmergencyBanner(onlineTechnicians: widget.onlineTechnicians),
-            ],
+            children: slides,
           ),
-          Positioned(
-            right: 16,
-            bottom: 14,
-            child: Row(
-              children: [
-                for (var i = 0; i < _count; i++)
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.only(left: 4),
-                    width: i == _page ? 18 : 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      color: i == _page
-                          ? (onDark ? AppColors.yellow : AppColors.black)
-                          : (onDark ? Colors.white.withValues(alpha: 0.45) : AppColors.black.withValues(alpha: 0.25)),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var i = 0; i < slides.length; i++)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: i == _page ? 18 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(3),
+                  color: i == _page ? AppColors.yellowDeep : AppColors.line,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// A banner made from artwork. Wide banners are fitted to the height and
+/// keep their left side, where the headline and button are.
+class _ImageBanner extends StatelessWidget {
+  const _ImageBanner({required this.asset, required this.label, this.onTap, this.alignment = Alignment.centerLeft});
+
+  final String asset;
+  final String label;
+  final VoidCallback? onTap;
+  final Alignment alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: label,
+      button: onTap != null,
+      excludeSemantics: true,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(asset, fit: BoxFit.cover, alignment: alignment, filterQuality: FilterQuality.medium),
+            if (onTap != null) Material(color: Colors.transparent, child: InkWell(onTap: onTap)),
+          ],
+        ),
       ),
     );
   }

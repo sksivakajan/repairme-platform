@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -315,19 +314,19 @@ class _PromoCarouselState extends State<_PromoCarousel> {
   List<Widget> _slides(BuildContext context) => [
         const _TeamBanner(),
         _ImageBanner(
-          asset: 'assets/images/banner_emergency.jpg',
+          asset: 'assets/images/banner_need_help.jpg',
           label: 'Need help right now? Get emergency help',
           onTap: () => HomeScreen.startRequest(context, BookingType.emergency),
         ),
         _ImageBanner(
-          asset: 'assets/images/banner_schedule.jpg',
-          label: 'Repair it on your time. Schedule a repair',
-          onTap: () => HomeScreen.startRequest(context, BookingType.scheduled),
+          asset: 'assets/images/banner_home_repairs.jpg',
+          label: 'Home repairs made simple. Book a technician now',
+          onTap: () => context.push('/services'),
         ),
         _ImageBanner(
-          asset: 'assets/images/banner_measure.jpg',
-          label: 'Planning something bigger? Request a measurement',
-          onTap: () => HomeScreen.startRequest(context, BookingType.inspection),
+          asset: 'assets/images/banner_roadside.jpg',
+          label: 'Stranded on the road? Get help now',
+          onTap: () => HomeScreen.startRequest(context, BookingType.emergency),
         ),
         _EmergencyBanner(onlineTechnicians: widget.onlineTechnicians),
         const _BrandBanner(),
@@ -388,8 +387,7 @@ class _PromoCarouselState extends State<_PromoCarousel> {
   }
 }
 
-/// A banner made from artwork, shown whole. A blurred copy of the same
-/// image fills the space around it.
+/// A banner made from artwork (designed at about 2.15 : 1, so it fills the slot).
 class _ImageBanner extends StatelessWidget {
   const _ImageBanner({required this.asset, required this.label, this.onTap});
 
@@ -408,17 +406,7 @@ class _ImageBanner extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            ImageFiltered(
-              imageFilter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: Image.asset(asset, fit: BoxFit.cover),
-            ),
-            ColoredBox(color: Colors.black.withValues(alpha: 0.25)),
-            Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(asset, fit: BoxFit.contain, filterQuality: FilterQuality.medium),
-              ),
-            ),
+            Image.asset(asset, fit: BoxFit.cover, filterQuality: FilterQuality.medium),
             if (onTap != null) Material(color: Colors.transparent, child: InkWell(onTap: onTap)),
           ],
         ),

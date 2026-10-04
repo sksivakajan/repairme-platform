@@ -20,12 +20,14 @@ class RepairMeLogo extends StatelessWidget {
   const RepairMeLogo({
     super.key,
     this.size = 96,
-    this.palette = LogoPalette.onLight,
+    this.palette,
     this.progress = 1,
   });
 
   final double size;
-  final LogoPalette palette;
+
+  /// Follows the app theme when null.
+  final LogoPalette? palette;
 
   /// 0 → 1 reveals the mark from the base up while it scales in (splash).
   final double progress;
@@ -36,7 +38,7 @@ class RepairMeLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final image = Image.asset(
-      palette.asset,
+      (palette ?? (AppColors.isDark ? LogoPalette.onDark : LogoPalette.onLight)).asset,
       width: size,
       height: size,
       filterQuality: FilterQuality.medium,
@@ -67,17 +69,19 @@ class RepairMeLogo extends StatelessWidget {
 
 /// "RepairMe" with "Me" in brand yellow.
 class Wordmark extends StatelessWidget {
-  const Wordmark({super.key, this.fontSize = 34, this.onDark = false});
+  const Wordmark({super.key, this.fontSize = 34, this.onDark});
 
   final double fontSize;
-  final bool onDark;
+
+  /// White "Repair" for dark backgrounds; follows the app theme when null.
+  final bool? onDark;
 
   @override
   Widget build(BuildContext context) {
     return Text.rich(
       TextSpan(
         children: [
-          TextSpan(text: 'Repair', style: TextStyle(color: onDark ? Colors.white : AppColors.ink)),
+          TextSpan(text: 'Repair', style: TextStyle(color: (onDark ?? AppColors.isDark) ? Colors.white : AppColors.black)),
           const TextSpan(text: 'Me', style: TextStyle(color: AppColors.yellow)),
         ],
       ),
@@ -104,7 +108,7 @@ class AppIconBadge extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.ink,
+        color: AppColors.black,
         borderRadius: BorderRadius.circular(size * 0.28),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.22), blurRadius: 18, offset: const Offset(0, 8)),

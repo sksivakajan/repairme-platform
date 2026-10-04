@@ -18,17 +18,33 @@ class HomeShell extends StatelessWidget {
     return Scaffold(
       body: shell,
       bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: AppColors.line)),
+        ),
         child: NavigationBar(
           selectedIndex: shell.currentIndex,
           onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
           destinations: const [
-            NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Home'),
             NavigationDestination(
-                icon: Icon(Icons.calendar_today_outlined), selectedIcon: Icon(Icons.calendar_month_rounded), label: 'Bookings'),
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
             NavigationDestination(
-                icon: Icon(Icons.chat_bubble_outline_rounded), selectedIcon: Icon(Icons.chat_bubble_rounded), label: 'Messages'),
-            NavigationDestination(icon: Icon(Icons.person_outline_rounded), selectedIcon: Icon(Icons.person_rounded), label: 'Profile'),
+              icon: Icon(Icons.calendar_today_outlined),
+              selectedIcon: Icon(Icons.calendar_month_rounded),
+              label: 'Bookings',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.chat_bubble_outline_rounded),
+              selectedIcon: Icon(Icons.chat_bubble_rounded),
+              label: 'Messages',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline_rounded),
+              selectedIcon: Icon(Icons.person_rounded),
+              label: 'Profile',
+            ),
           ],
         ),
       ),
@@ -47,30 +63,34 @@ class ActiveBookingBanner extends StatelessWidget {
     return Material(
       color: AppColors.yellow,
       borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () async {
-          await context.push('/booking/${booking.id}');
-          await onReturn();
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              CategoryBadge(iconKey: booking.categoryIcon, size: 40, highlight: false),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(booking.title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    Text('${booking.reference} · ${statusStyle(booking.status, booking.type).label.toLowerCase()}',
-                        style: const TextStyle(fontSize: 13)),
-                  ],
+      child: OnYellow(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () async {
+            await context.push('/booking/${booking.id}');
+            await onReturn();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                CategoryBadge(iconKey: booking.categoryIcon, size: 40, highlight: false),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(booking.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                      Text(
+                        '${booking.reference} · ${statusStyle(booking.status, booking.type).label.toLowerCase()}',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const Icon(Icons.chevron_right_rounded),
-            ],
+                const Icon(Icons.chevron_right_rounded),
+              ],
+            ),
           ),
         ),
       ),
@@ -111,12 +131,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
             children: [
               TextField(
                 autofocus: widget.focusSearch,
-                decoration: const InputDecoration(hintText: 'Search for a service...', prefixIcon: Icon(Icons.search_rounded)),
+                decoration: const InputDecoration(
+                  hintText: 'Search for a service...',
+                  prefixIcon: Icon(Icons.search_rounded),
+                ),
                 onChanged: (value) => setState(() => _query = value),
               ),
               const SizedBox(height: 16),
-              if (categories.isEmpty)
-                const EmptyState(icon: Icons.search_off_rounded, title: 'No matching service'),
+              if (categories.isEmpty) const EmptyState(icon: Icons.search_off_rounded, title: 'No matching service'),
               for (final category in categories)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -157,15 +179,23 @@ class BookingsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Bookings'),
-          bottom: const TabBar(
+          bottom: TabBar(
             labelColor: AppColors.ink,
             indicatorColor: AppColors.ink,
             labelStyle: TextStyle(fontWeight: FontWeight.w700),
-            tabs: [Tab(text: 'Active'), Tab(text: 'Completed'), Tab(text: 'Cancelled')],
+            tabs: [
+              Tab(text: 'Active'),
+              Tab(text: 'Completed'),
+              Tab(text: 'Cancelled'),
+            ],
           ),
         ),
         body: const TabBarView(
-          children: [_BookingList(tab: 'active'), _BookingList(tab: 'completed'), _BookingList(tab: 'cancelled')],
+          children: [
+            _BookingList(tab: 'active'),
+            _BookingList(tab: 'completed'),
+            _BookingList(tab: 'cancelled'),
+          ],
         ),
       ),
     );
@@ -257,7 +287,7 @@ class BookingCard extends StatelessWidget {
                   children: [
                     Text(booking.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                     const SizedBox(height: 2),
-                    Text('$when · $who', style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                    Text('$when · $who', style: TextStyle(color: AppColors.muted, fontSize: 13)),
                   ],
                 ),
               ),
@@ -331,9 +361,12 @@ class _GroupLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
-        child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1, color: AppColors.muted)),
-      );
+    padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
+    child: Text(
+      text,
+      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1, color: AppColors.muted),
+    ),
+  );
 }
 
 class _NotificationTile extends StatelessWidget {
@@ -352,12 +385,14 @@ class _NotificationTile extends StatelessWidget {
       tileColor: unread ? AppColors.yellowSoft.withValues(alpha: 0.5) : null,
       leading: CircleAvatar(
         backgroundColor: unread ? AppColors.yellow : AppColors.line,
-        child: const Icon(Icons.notifications_rounded, color: AppColors.ink, size: 20),
+        child: Icon(Icons.notifications_rounded, color: unread ? AppColors.black : AppColors.ink, size: 20),
       ),
       title: Row(
         children: [
-          Expanded(child: Text(notification.title, style: const TextStyle(fontWeight: FontWeight.w700))),
-          Text(when, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+          Expanded(
+            child: Text(notification.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+          ),
+          Text(when, style: TextStyle(color: AppColors.muted, fontSize: 12)),
         ],
       ),
       subtitle: Text(notification.body),
@@ -371,14 +406,22 @@ class SupportScreen extends StatelessWidget {
   const SupportScreen({super.key});
 
   static const _faqs = [
-    ('Report a problem with a booking',
-        'Open the booking and use "Report a problem", or create a ticket below. Our team replies within minutes during the day.'),
-    ('How is the price calculated?',
-        'Every visit has a Rs. 500 visit fee. Labour and parts are quoted by the technician on site, and nothing is charged until you approve the cost in the app.'),
-    ('How are technicians verified?',
-        'Every RepairMe technician is ID-checked and their trade documents are reviewed by our team before they can accept jobs.'),
-    ('Refunds and cancellations',
-        'Cancelling before a technician arrives is free. Every completed job has a 7-day workmanship cover: if the same fault returns, we send someone back at no labour cost.'),
+    (
+      'Report a problem with a booking',
+      'Open the booking and use "Report a problem", or create a ticket below. Our team replies within minutes during the day.',
+    ),
+    (
+      'How is the price calculated?',
+      'Every visit has a Rs. 500 visit fee. Labour and parts are quoted by the technician on site, and nothing is charged until you approve the cost in the app.',
+    ),
+    (
+      'How are technicians verified?',
+      'Every RepairMe technician is ID-checked and their trade documents are reviewed by our team before they can accept jobs.',
+    ),
+    (
+      'Refunds and cancellations',
+      'Cancelling before a technician arrives is free. Every completed job has a 7-day workmanship cover: if the same fault returns, we send someone back at no labour cost.',
+    ),
   ];
 
   @override
@@ -424,10 +467,12 @@ class SupportScreen extends StatelessWidget {
                     child: Card(
                       child: ListTile(
                         title: Text(ticket.subject, style: const TextStyle(fontWeight: FontWeight.w700)),
-                        subtitle: Text([ticket.reference, if (ticket.bookingReference != null) ticket.bookingReference].join(' · ')),
+                        subtitle: Text(
+                          [ticket.reference, if (ticket.bookingReference != null) ticket.bookingReference].join(' · '),
+                        ),
                         trailing: ticket.status == 'RESOLVED'
-                            ? const Pill(label: 'RESOLVED', background: Color(0xFFE2F3E8), foreground: AppColors.success)
-                            : const Pill(label: 'OPEN', background: AppColors.yellow, foreground: AppColors.ink),
+                            ? Pill(label: 'RESOLVED', background: Color(0xFFE2F3E8), foreground: AppColors.success)
+                            : const Pill(label: 'OPEN', background: AppColors.yellow, foreground: AppColors.black),
                       ),
                     ),
                   ),
@@ -441,7 +486,7 @@ class SupportScreen extends StatelessWidget {
                         shape: const Border(),
                         title: Text(question, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        children: [Text(answer, style: const TextStyle(color: AppColors.inkSoft, height: 1.4))],
+                        children: [Text(answer, style: TextStyle(color: AppColors.inkSoft, height: 1.4))],
                       ),
                   ],
                 ),
@@ -473,10 +518,13 @@ class _SupportAction extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(backgroundColor: AppColors.yellow, child: Icon(icon, color: AppColors.ink)),
+              CircleAvatar(
+                backgroundColor: AppColors.yellow,
+                child: Icon(icon, color: AppColors.black),
+              ),
               const SizedBox(height: 12),
               Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-              Text(subtitle, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+              Text(subtitle, style: TextStyle(color: AppColors.muted, fontSize: 13)),
             ],
           ),
         ),
@@ -501,7 +549,10 @@ Future<bool> showNewTicketSheet(BuildContext context, {String? bookingId, String
         children: [
           Text('Write to RepairMe', style: Theme.of(sheetContext).textTheme.titleLarge),
           const SizedBox(height: 16),
-          TextField(controller: subjectController, decoration: const InputDecoration(hintText: 'Subject')),
+          TextField(
+            controller: subjectController,
+            decoration: const InputDecoration(hintText: 'Subject'),
+          ),
           const SizedBox(height: 10),
           TextField(
             controller: messageController,
@@ -513,8 +564,11 @@ Future<bool> showNewTicketSheet(BuildContext context, {String? bookingId, String
           BusyButton(
             label: 'Send',
             onPressed: () async {
-              await context.repo.createTicket(subjectController.text.trim(), messageController.text.trim(),
-                  bookingId: bookingId);
+              await context.repo.createTicket(
+                subjectController.text.trim(),
+                messageController.text.trim(),
+                bookingId: bookingId,
+              );
               if (sheetContext.mounted) Navigator.pop(sheetContext, true);
             },
           ),
@@ -552,15 +606,22 @@ class ProfileScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(profile.fullName ?? 'Add your name',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                          Text(prettyPhone(profile.phoneNumber ?? ''), style: const TextStyle(color: AppColors.muted)),
+                          Text(
+                            profile.fullName ?? 'Add your name',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                          ),
+                          Text(prettyPhone(profile.phoneNumber ?? ''), style: TextStyle(color: AppColors.muted)),
                           const SizedBox(height: 4),
-                          const Row(children: [
-                            Icon(Icons.verified_rounded, size: 16, color: AppColors.success),
-                            SizedBox(width: 4),
-                            Text('Phone verified', style: TextStyle(color: AppColors.success, fontSize: 13, fontWeight: FontWeight.w600)),
-                          ]),
+                          Row(
+                            children: [
+                              Icon(Icons.verified_rounded, size: 16, color: AppColors.success),
+                              SizedBox(width: 4),
+                              Text(
+                                'Phone verified',
+                                style: TextStyle(color: AppColors.success, fontSize: 13, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -583,6 +644,8 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
+            const _AppearanceCard(),
+            const SizedBox(height: 12),
             Card(
               child: Column(
                 children: [
@@ -593,7 +656,7 @@ class ProfileScreen extends StatelessWidget {
                     onTap: () => context.push('/addresses'),
                   ),
                   const Divider(indent: 16, endIndent: 16),
-                  const ListTile(
+                  ListTile(
                     leading: Icon(Icons.payments_outlined),
                     title: Text('Payment methods'),
                     trailing: Text('Cash', style: TextStyle(color: AppColors.muted)),
@@ -695,18 +758,18 @@ class _Stat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Expanded(
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            child: Column(
-              children: [
-                Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-                Text(label, style: const TextStyle(color: AppColors.muted)),
-              ],
-            ),
-          ),
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Column(
+          children: [
+            Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+            Text(label, style: TextStyle(color: AppColors.muted)),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 }
 
 /// Saved addresses (from Profile).
@@ -734,8 +797,10 @@ class AddressesScreen extends StatelessWidget {
                 child: Card(
                   child: ListTile(
                     leading: Icon(address.label == 'OFFICE' ? Icons.business_rounded : Icons.home_rounded),
-                    title: Text(address.labelText + (address.isDefault ? ' · Default' : ''),
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                    title: Text(
+                      address.labelText + (address.isDefault ? ' · Default' : ''),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                     subtitle: Text('${address.address.oneLine}\n${address.address.city}'),
                     isThreeLine: true,
                     trailing: IconButton(
@@ -752,6 +817,52 @@ class AddressesScreen extends StatelessWidget {
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Light / dark / system appearance, saved on the device.
+class _AppearanceCard extends StatelessWidget {
+  const _AppearanceCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final appearance = context.appearance;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.contrast_rounded),
+                SizedBox(width: 16),
+                Text('Appearance', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListenableBuilder(
+              listenable: appearance,
+              builder: (context, _) => SegmentedButton<ThemeMode>(
+                showSelectedIcon: false,
+                style: SegmentedButton.styleFrom(
+                  selectedBackgroundColor: AppColors.yellow,
+                  selectedForegroundColor: AppColors.black,
+                  side: BorderSide(color: AppColors.line),
+                ),
+                segments: const [
+                  ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_outlined), label: Text('Light')),
+                  ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_outlined), label: Text('Dark')),
+                  ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_outlined), label: Text('System')),
+                ],
+                selected: {appearance.mode},
+                onSelectionChanged: (selection) => appearance.setMode(selection.first),
+              ),
+            ),
           ],
         ),
       ),

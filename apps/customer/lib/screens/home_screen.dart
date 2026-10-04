@@ -56,7 +56,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark,
+      value: AppColors.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: SafeArea(
         bottom: false,
         child: AsyncView(
@@ -140,7 +140,7 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${_greeting()},', style: const TextStyle(color: AppColors.muted, fontSize: 14)),
+              Text('${_greeting()},', style: TextStyle(color: AppColors.muted, fontSize: 14)),
               Text(
                 name,
                 maxLines: 1,
@@ -159,16 +159,16 @@ class _Header extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.location_on_rounded, size: 17, color: AppColors.yellowDeep),
+                      Icon(Icons.location_on_rounded, size: 17, color: AppColors.yellowDeep),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           place,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.inkSoft),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.inkSoft),
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkSoft),
+                      Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkSoft),
                     ],
                   ),
                 ),
@@ -204,10 +204,10 @@ class _Header extends StatelessWidget {
                 ),
               ),
               child: profile.fullName == null || profile.fullName!.trim().isEmpty
-                  ? const Icon(Icons.person_rounded, color: AppColors.ink)
+                  ? const Icon(Icons.person_rounded, color: AppColors.black)
                   : Text(
                       initials(profile.fullName!)[0],
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                      style: const TextStyle(color: AppColors.black, fontSize: 18, fontWeight: FontWeight.w700),
                     ),
             ),
           ),
@@ -232,7 +232,7 @@ class _BellButton extends StatelessWidget {
         color: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: AppColors.line),
+          side: BorderSide(color: AppColors.line),
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
@@ -254,7 +254,7 @@ class _BellButton extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: AppColors.yellowDeep,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: AppColors.surface, width: 2),
                       ),
                     ),
                   ),
@@ -276,12 +276,12 @@ class _SearchBar extends StatelessWidget {
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.line),
+        side: BorderSide(color: AppColors.line),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () => context.push('/services?search=1'),
-        child: const SizedBox(
+        child: SizedBox(
           height: 54,
           child: Row(
             children: [
@@ -361,8 +361,8 @@ class _PromoCarouselState extends State<_PromoCarousel> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(3),
                       color: i == _page
-                          ? (onDark ? AppColors.yellow : AppColors.ink)
-                          : (onDark ? Colors.white.withValues(alpha: 0.45) : AppColors.ink.withValues(alpha: 0.25)),
+                          ? (onDark ? AppColors.yellow : AppColors.black)
+                          : (onDark ? Colors.white.withValues(alpha: 0.45) : AppColors.black.withValues(alpha: 0.25)),
                     ),
                   ),
               ],
@@ -375,10 +375,10 @@ class _PromoCarouselState extends State<_PromoCarousel> {
 }
 
 Widget _circle(double size, Color color) => Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
+  width: size,
+  height: size,
+  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+);
 
 class _BrandBanner extends StatelessWidget {
   const _BrandBanner();
@@ -404,13 +404,19 @@ class _BrandBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Built in Sri Lanka,',
-                    style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700, height: 1.25)),
-                Text('for every Sri Lankan',
-                    style: TextStyle(color: AppColors.yellow, fontSize: 19, fontWeight: FontWeight.w700, height: 1.25)),
+                Text(
+                  'Built in Sri Lanka,',
+                  style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700, height: 1.25),
+                ),
+                Text(
+                  'for every Sri Lankan',
+                  style: TextStyle(color: AppColors.yellow, fontSize: 19, fontWeight: FontWeight.w700, height: 1.25),
+                ),
                 SizedBox(height: 6),
-                Text('Verified expertise. Trusted integrity.',
-                    style: TextStyle(color: Color(0xFFCFCCC4), fontSize: 11.5)),
+                Text(
+                  'Verified expertise. Trusted integrity.',
+                  style: TextStyle(color: Color(0xFFCFCCC4), fontSize: 11.5),
+                ),
                 Spacer(),
                 Row(
                   children: [
@@ -440,16 +446,16 @@ class _TrustChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(999),
-      ),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(999)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 13, color: AppColors.yellow),
           const SizedBox(width: 4),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500),
+          ),
         ],
       ),
     );
@@ -484,37 +490,48 @@ class _EmergencyBanner extends StatelessWidget {
               child: Container(
                 width: 64,
                 height: 64,
-                decoration: const BoxDecoration(color: AppColors.ink, shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: AppColors.black, shape: BoxShape.circle),
                 child: const Icon(Icons.bolt_rounded, color: AppColors.yellow, size: 36),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 18, 100, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Pill(label: 'EMERGENCY', background: AppColors.ink, foreground: AppColors.yellow),
-                const SizedBox(height: 10),
-                const Text('Need help right now?', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, height: 1.2)),
-                Text(
-                  onlineTechnicians > 0
-                      ? '$onlineTechnicians technicians online · avg. 18 min'
-                      : 'Verified technicians, 24 hours a day',
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.inkSoft),
-                ),
-                const Spacer(),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(0, 38),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    textStyle: const TextStyle(fontFamily: AppFonts.family, fontSize: 13, fontWeight: FontWeight.w600),
+          OnYellow(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 18, 100, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Pill(label: 'EMERGENCY', background: AppColors.black, foreground: AppColors.yellow),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Need help right now?',
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, height: 1.2),
                   ),
-                  onPressed: () => HomeScreen.startRequest(context, BookingType.emergency),
-                  child: const Text('Get help now'),
-                ),
-              ],
+                  Text(
+                    onlineTechnicians > 0
+                        ? '$onlineTechnicians technicians online · avg. 18 min'
+                        : 'Verified technicians, 24 hours a day',
+                    style: const TextStyle(fontSize: 12.5, color: Color(0xFF3D3D3A)),
+                  ),
+                  const Spacer(),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.black,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(0, 38),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      textStyle: const TextStyle(
+                        fontFamily: AppFonts.family,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: () => HomeScreen.startRequest(context, BookingType.emergency),
+                    child: const Text('Get help now'),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -536,7 +553,9 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: 22, bottom: 10),
       child: Row(
         children: [
-          Expanded(child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
+          Expanded(
+            child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          ),
           TextButton(
             onPressed: onAction,
             style: TextButton.styleFrom(
@@ -553,12 +572,10 @@ class _SectionHeader extends StatelessWidget {
 }
 
 BoxDecoration _cardDecoration() => BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(18),
-      boxShadow: [
-        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 14, offset: const Offset(0, 4)),
-      ],
-    );
+  color: AppColors.surface,
+  borderRadius: BorderRadius.circular(18),
+  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 14, offset: const Offset(0, 4))],
+);
 
 class _ServiceTile extends StatelessWidget {
   const _ServiceTile({required this.category});
@@ -641,7 +658,7 @@ class _TechnicianCard extends StatelessWidget {
                     backgroundColor: AppColors.yellowSoft,
                     child: Text(
                       technician.firstName[0].toUpperCase(),
-                      style: const TextStyle(color: AppColors.ink, fontSize: 20, fontWeight: FontWeight.w700),
+                      style: TextStyle(color: AppColors.ink, fontSize: 20, fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -652,9 +669,9 @@ class _TechnicianCard extends StatelessWidget {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: AppColors.ink,
+                      color: AppColors.solid,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: AppColors.surface, width: 2),
                     ),
                     child: const Icon(Icons.check_rounded, size: 13, color: AppColors.yellow),
                   ),
@@ -672,7 +689,7 @@ class _TechnicianCard extends StatelessWidget {
               technician.trade,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 11.5, color: AppColors.muted),
+              style: TextStyle(fontSize: 11.5, color: AppColors.muted),
             ),
             const SizedBox(height: 6),
             Row(
@@ -726,8 +743,7 @@ class TopTechniciansScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              if (technicians.isEmpty)
-                const EmptyState(icon: Icons.star_outline_rounded, title: 'No ratings yet'),
+              if (technicians.isEmpty) const EmptyState(icon: Icons.star_outline_rounded, title: 'No ratings yet'),
               for (final technician in technicians)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -739,14 +755,14 @@ class TopTechniciansScreen extends StatelessWidget {
                         backgroundColor: AppColors.yellowSoft,
                         child: Text(
                           technician.firstName[0].toUpperCase(),
-                          style: const TextStyle(color: AppColors.ink, fontWeight: FontWeight.w700),
+                          style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w700),
                         ),
                       ),
                       title: Row(
                         children: [
                           Text(technician.firstName, style: const TextStyle(fontWeight: FontWeight.w600)),
                           const SizedBox(width: 6),
-                          const Icon(Icons.verified_rounded, size: 16, color: AppColors.success),
+                          Icon(Icons.verified_rounded, size: 16, color: AppColors.success),
                         ],
                       ),
                       subtitle: Text('${technician.trade} · ${technician.jobsCompleted} jobs'),

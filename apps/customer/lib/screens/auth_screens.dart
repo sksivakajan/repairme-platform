@@ -85,15 +85,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Container(
                             width: 96,
                             height: 96,
-                            decoration: BoxDecoration(
-                                color: AppColors.yellow, borderRadius: BorderRadius.circular(28)),
-                            child: Icon(page.icon, size: 52),
+                            decoration: BoxDecoration(color: AppColors.yellow, borderRadius: BorderRadius.circular(28)),
+                            child: Icon(page.icon, size: 52, color: AppColors.black),
                           ),
                           const SizedBox(height: 32),
                           Text(page.title, style: Theme.of(context).textTheme.headlineMedium),
                           const SizedBox(height: 12),
-                          Text(page.body,
-                              style: const TextStyle(fontSize: 16, color: AppColors.inkSoft, height: 1.5)),
+                          Text(page.body, style: TextStyle(fontSize: 16, color: AppColors.inkSoft, height: 1.5)),
                         ],
                       ),
                     ),
@@ -121,8 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: FilledButton(
                 onPressed: last
                     ? _finish
-                    : () => _controller.nextPage(
-                        duration: const Duration(milliseconds: 250), curve: Curves.easeOut),
+                    : () => _controller.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeOut),
                 child: Text(last ? 'Get started' : 'Next'),
               ),
             ),
@@ -156,37 +153,37 @@ class AuthHeader extends StatelessWidget {
         children: [
           Positioned(top: -70, left: -60, child: _circle(200, Colors.white.withValues(alpha: 0.16))),
           Positioned(bottom: -80, right: -50, child: _circle(210, const Color(0xFFF2A100).withValues(alpha: 0.35))),
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 34),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 40,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: onBack == null
-                          ? null
-                          : IconButton(
-                              onPressed: onBack,
-                              icon: const Icon(Icons.arrow_back_rounded),
-                              tooltip: 'Back',
-                            ),
+          OnYellow(
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 34),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 40,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: onBack == null
+                            ? null
+                            : IconButton(
+                                onPressed: onBack,
+                                color: AppColors.black,
+                                icon: const Icon(Icons.arrow_back_rounded),
+                                tooltip: 'Back',
+                              ),
+                      ),
                     ),
-                  ),
-                  const AppIconBadge(size: 78),
-                  const SizedBox(height: 18),
-                  const Text(
-                    'Welcome to RepairMe',
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700, letterSpacing: -0.6),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Home repairs, made simple',
-                    style: TextStyle(fontSize: 14, color: AppColors.inkSoft),
-                  ),
-                ],
+                    const AppIconBadge(size: 78),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Welcome to RepairMe',
+                      style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700, letterSpacing: -0.6),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('Home repairs, made simple', style: TextStyle(fontSize: 14, color: Color(0xFF3D3D3A))),
+                  ],
+                ),
               ),
             ),
           ),
@@ -196,10 +193,10 @@ class AuthHeader extends StatelessWidget {
   }
 
   static Widget _circle(double size, Color color) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      );
+    width: size,
+    height: size,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  );
 }
 
 class _AuthLayout extends StatelessWidget {
@@ -228,7 +225,7 @@ class _AuthLayout extends StatelessWidget {
                   Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 4),
                   DefaultTextStyle.merge(
-                    style: const TextStyle(fontSize: 13, color: AppColors.muted),
+                    style: TextStyle(fontSize: 13, color: AppColors.muted),
                     child: subtitle,
                   ),
                   const SizedBox(height: 18),
@@ -249,7 +246,7 @@ class _DevLoginHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (Env.useFirebase) return const SizedBox.shrink();
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.only(top: 18),
       child: Center(
         child: Pill(
@@ -354,11 +351,14 @@ class _PhoneScreenState extends State<PhoneScreen> {
           onPressed: _phone == null ? null : _send,
         ),
         const SizedBox(height: 16),
-        const Text.rich(
+        Text.rich(
           TextSpan(
             text: 'By continuing you agree to our ',
             children: [
-              TextSpan(text: 'Terms & Privacy', style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w500)),
+              TextSpan(
+                text: 'Terms & Privacy',
+                style: TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w500),
+              ),
             ],
           ),
           textAlign: TextAlign.center,
@@ -483,7 +483,8 @@ class _OtpScreenState extends State<OtpScreen> {
                           padding: EdgeInsets.only(left: i == 0 ? 0 : 5, right: i == _length - 1 ? 0 : 5),
                           child: _DigitBox(
                             digit: i < code.length ? code[i] : '',
-                            active: _focus.hasFocus && (i == code.length || (i == _length - 1 && code.length == _length)),
+                            active:
+                                _focus.hasFocus && (i == code.length || (i == _length - 1 && code.length == _length)),
                           ),
                         ),
                       ),
@@ -509,8 +510,10 @@ class _OtpScreenState extends State<OtpScreen> {
           child: _secondsLeft > 0
               ? Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text('Resend code in 0:${_secondsLeft.toString().padLeft(2, '0')}',
-                      style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                  child: Text(
+                    'Resend code in 0:${_secondsLeft.toString().padLeft(2, '0')}',
+                    style: TextStyle(color: AppColors.muted, fontSize: 13),
+                  ),
                 )
               : TextButton(onPressed: _resend, child: const Text('Resend code')),
         ),

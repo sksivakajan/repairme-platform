@@ -70,7 +70,7 @@ class _BookingScreenState extends State<BookingScreen> with _LiveBooking {
         appBar: AppBar(),
         body: loadError != null
             ? ErrorState(error: loadError!, onRetry: refresh)
-            : const Center(child: CircularProgressIndicator(color: AppColors.ink)),
+            : Center(child: CircularProgressIndicator(color: AppColors.ink)),
       );
     }
     final Widget body = switch (b.status) {
@@ -116,16 +116,25 @@ class _FindingView extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        MapPanel(area: booking.addressArea, height: 230, overlay: const Positioned.fill(child: _Pulse())),
+        MapPanel(
+          area: booking.addressArea,
+          height: 230,
+          overlay: const Positioned.fill(child: _Pulse()),
+        ),
         Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Request #${booking.reference}', style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+              Text(
+                'Request #${booking.reference}',
+                style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 6),
               Text(
-                operator ? 'Our team is finding someone for you' : 'Finding a verified ${booking.categoryName.toLowerCase()} technician',
+                operator
+                    ? 'Our team is finding someone for you'
+                    : 'Finding a verified ${booking.categoryName.toLowerCase()} technician',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 6),
@@ -133,17 +142,24 @@ class _FindingView extends StatelessWidget {
                 operator
                     ? 'No technician accepted yet, so a RepairMe operator is assigning one for you. Usually under 2 minutes.'
                     : booking.type == BookingType.emergency
-                        ? 'Matching you with technicians near ${booking.addressArea}.'
-                        : 'We are confirming a technician for ${formatWindow(booking.scheduledStart ?? booking.createdAt, booking.scheduledEnd ?? booking.createdAt)}.',
-                style: const TextStyle(color: AppColors.inkSoft, height: 1.4),
+                    ? 'Matching you with technicians near ${booking.addressArea}.'
+                    : 'We are confirming a technician for ${formatWindow(booking.scheduledStart ?? booking.createdAt, booking.scheduledEnd ?? booking.createdAt)}.',
+                style: TextStyle(color: AppColors.inkSoft, height: 1.4),
               ),
               const SizedBox(height: 20),
               for (final (i, (label, done)) in steps.indexed)
-                _TimelineRow(label: label, done: done, active: !done && (i == 0 || steps[i - 1].$2), last: i == steps.length - 1),
+                _TimelineRow(
+                  label: label,
+                  done: done,
+                  active: !done && (i == 0 || steps[i - 1].$2),
+                  last: i == steps.length - 1,
+                ),
               if (!operator) ...[
                 const SizedBox(height: 12),
-                const Text('If nobody accepts, the RepairMe team assigns a technician for you.',
-                    style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                Text(
+                  'If nobody accepts, the RepairMe team assigns a technician for you.',
+                  style: TextStyle(color: AppColors.muted, fontSize: 13),
+                ),
               ],
               const SizedBox(height: 24),
               if (booking.canCancel)
@@ -217,7 +233,7 @@ class _TimelineRow extends StatelessWidget {
                 height: 22,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: done ? AppColors.ink : (active ? AppColors.yellow : AppColors.surface),
+                  color: done ? AppColors.solid : (active ? AppColors.yellow : AppColors.surface),
                   border: Border.all(color: done || active ? AppColors.ink : AppColors.line, width: 2),
                 ),
                 child: done ? const Icon(Icons.check_rounded, size: 14, color: AppColors.yellow) : null,
@@ -232,12 +248,14 @@ class _TimelineRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: TextStyle(
-                        fontWeight: done || active ? FontWeight.w700 : FontWeight.w500,
-                        color: done || active ? AppColors.ink : AppColors.muted,
-                      )),
-                  if (detail != null) Text(detail!, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: done || active ? FontWeight.w700 : FontWeight.w500,
+                      color: done || active ? AppColors.ink : AppColors.muted,
+                    ),
+                  ),
+                  if (detail != null) Text(detail!, style: TextStyle(color: AppColors.muted, fontSize: 13)),
                 ],
               ),
             ),
@@ -278,7 +296,7 @@ Future<void> showCancelSheet(BuildContext context, BookingDetail booking, ValueC
               noTechnician
                   ? 'No charge, since no technician has been assigned yet.'
                   : 'No charge, since ${booking.technician!.firstName} has not arrived yet.',
-              style: const TextStyle(color: AppColors.muted),
+              style: TextStyle(color: AppColors.muted),
             ),
             const SizedBox(height: 12),
             for (final (value, label) in reasons)
@@ -291,12 +309,18 @@ Future<void> showCancelSheet(BuildContext context, BookingDetail booking, ValueC
                 onChanged: (v) => setSheetState(() => reason = v),
               ),
             if (reason == 'OTHER')
-              TextField(controller: details, decoration: const InputDecoration(hintText: 'Tell us more (optional)')),
+              TextField(
+                controller: details,
+                decoration: const InputDecoration(hintText: 'Tell us more (optional)'),
+              ),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(onPressed: () => Navigator.pop(sheetContext), child: const Text('Keep waiting')),
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    child: const Text('Keep waiting'),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -306,7 +330,11 @@ Future<void> showCancelSheet(BuildContext context, BookingDetail booking, ValueC
                     onPressed: reason == null
                         ? null
                         : () async {
-                            final updated = await context.repo.cancel(booking.id, reason!, details: details.text.trim());
+                            final updated = await context.repo.cancel(
+                              booking.id,
+                              reason!,
+                              details: details.text.trim(),
+                            );
                             onChanged(updated);
                             if (sheetContext.mounted) Navigator.pop(sheetContext);
                           },
@@ -345,7 +373,11 @@ class _AssignedView extends StatelessWidget {
               : Positioned(
                   left: 16,
                   top: 16,
-                  child: Pill(label: 'ETA ${booking.etaMinutes} MIN', background: AppColors.ink, foreground: AppColors.yellow),
+                  child: Pill(
+                    label: 'ETA ${booking.etaMinutes} MIN',
+                    background: AppColors.black,
+                    foreground: AppColors.yellow,
+                  ),
                 ),
         ),
         Padding(
@@ -356,7 +388,7 @@ class _AssignedView extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: onTheWay
-                    ? const Pill(label: 'ON THE WAY', background: AppColors.yellow, foreground: AppColors.ink)
+                    ? const Pill(label: 'ON THE WAY', background: AppColors.yellow, foreground: AppColors.black)
                     : StatusPill(status: booking.status, type: booking.type),
               ),
               const SizedBox(height: 10),
@@ -364,12 +396,12 @@ class _AssignedView extends StatelessWidget {
                 onTheWay
                     ? '${tech.firstName} is on the way'
                     : booking.scheduledStart != null
-                        ? '${tech.firstName} will visit ${formatWindow(booking.scheduledStart!, booking.scheduledEnd!)}'
-                        : '${tech.firstName} accepted your request',
+                    ? '${tech.firstName} will visit ${formatWindow(booking.scheduledStart!, booking.scheduledEnd!)}'
+                    : '${tech.firstName} accepted your request',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               if (onTheWay && booking.etaMinutes != null)
-                Text('Arrives in about ${booking.etaMinutes} min', style: const TextStyle(color: AppColors.inkSoft)),
+                Text('Arrives in about ${booking.etaMinutes} min', style: TextStyle(color: AppColors.inkSoft)),
               const SizedBox(height: 16),
               TechnicianCard(technician: tech, categoryName: booking.categoryName),
               const SizedBox(height: 12),
@@ -384,7 +416,7 @@ class _AssignedView extends StatelessWidget {
               if (booking.canCancel)
                 TextButton(
                   onPressed: () => showCancelSheet(context, booking, onChanged),
-                  child: const Text('Cancel booking', style: TextStyle(color: AppColors.danger)),
+                  child: Text('Cancel booking', style: TextStyle(color: AppColors.danger)),
                 ),
             ],
           ),
@@ -414,21 +446,27 @@ class TechnicianCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(technician.displayName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                  Row(children: [
-                    const Icon(Icons.verified_rounded, size: 15, color: AppColors.success),
-                    const SizedBox(width: 4),
-                    Text('Verified ${categoryName.toLowerCase()} technician',
-                        style: const TextStyle(color: AppColors.inkSoft, fontSize: 13)),
-                  ]),
+                  Row(
+                    children: [
+                      Icon(Icons.verified_rounded, size: 15, color: AppColors.success),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Verified ${categoryName.toLowerCase()} technician',
+                        style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 2),
-                  Row(children: [
-                    const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF5A300)),
-                    const SizedBox(width: 2),
-                    Text(
-                      '${technician.rating?.toStringAsFixed(1) ?? 'New'} · ${technician.jobsCompleted} jobs',
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                    ),
-                  ]),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF5A300)),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${technician.rating?.toStringAsFixed(1) ?? 'New'} · ${technician.jobsCompleted} jobs',
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -449,15 +487,24 @@ class JobCodeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.ink, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(color: AppColors.solid, borderRadius: BorderRadius.circular(16)),
       child: Row(
         children: [
           Expanded(
-            child: Text('Job code · share only when $technicianName arrives',
-                style: const TextStyle(color: Color(0xFFBDBBB3), fontSize: 13)),
+            child: Text(
+              'Job code · share only when $technicianName arrives',
+              style: const TextStyle(color: Color(0xFFBDBBB3), fontSize: 13),
+            ),
           ),
-          Text(code,
-              style: const TextStyle(color: AppColors.yellow, fontSize: 30, fontWeight: FontWeight.w900, letterSpacing: 6)),
+          Text(
+            code,
+            style: const TextStyle(
+              color: AppColors.yellow,
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 6,
+            ),
+          ),
         ],
       ),
     );
@@ -474,7 +521,7 @@ class ChatButton extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!booking.canChat) return const SizedBox.shrink();
     return FilledButton.icon(
-      style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
+      style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.black),
       onPressed: () async {
         await context.push('/booking/${booking.id}/chat');
         await onReturn();
@@ -519,7 +566,7 @@ class _JobStatusView extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       children: [
         Text('Job #${b.reference}', style: Theme.of(context).textTheme.headlineSmall),
-        Text('${b.categoryName} · ${bookingTypeLabel(b.type)}', style: const TextStyle(color: AppColors.muted)),
+        Text('${b.categoryName} · ${bookingTypeLabel(b.type)}', style: TextStyle(color: AppColors.muted)),
         const SizedBox(height: 16),
         if (pending != null)
           _ActionBanner(
@@ -556,11 +603,17 @@ class _JobStatusView extends StatelessWidget {
         const SizedBox(height: 16),
         if (b.status != 'CANCELLED') ...[
           _TimelineRow(label: 'Request created', done: true, detail: at('SEARCHING')),
-          _TimelineRow(label: 'Technician accepted', done: done('ASSIGNED'),
-              detail: b.technician == null ? null : '${b.technician!.displayName} · ${at('ASSIGNED') ?? ''}'),
+          _TimelineRow(
+            label: 'Technician accepted',
+            done: done('ASSIGNED'),
+            detail: b.technician == null ? null : '${b.technician!.displayName} · ${at('ASSIGNED') ?? ''}',
+          ),
           _TimelineRow(label: 'On the way', done: done('EN_ROUTE'), detail: at('EN_ROUTE')),
-          _TimelineRow(label: 'Arrived', done: done('ARRIVED'),
-              detail: done('ARRIVED') ? 'Job code verified · ${at('ARRIVED') ?? ''}' : null),
+          _TimelineRow(
+            label: 'Arrived',
+            done: done('ARRIVED'),
+            detail: done('ARRIVED') ? 'Job code verified · ${at('ARRIVED') ?? ''}' : null,
+          ),
           _TimelineRow(
             label: 'Working',
             done: done('AWAITING_APPROVAL'),
@@ -592,7 +645,7 @@ class _JobStatusView extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(b.description),
                 const SizedBox(height: 8),
-                Text(b.address.oneLine, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                Text(b.address.oneLine, style: TextStyle(color: AppColors.muted, fontSize: 13)),
               ],
             ),
           ),
@@ -620,25 +673,27 @@ class _ActionBanner extends StatelessWidget {
     return Material(
       color: AppColors.yellow,
       borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                    const SizedBox(height: 2),
-                    Text(body),
-                  ],
+      child: OnYellow(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                      const SizedBox(height: 2),
+                      Text(body),
+                    ],
+                  ),
                 ),
-              ),
-              const Icon(Icons.arrow_forward_rounded),
-            ],
+                const Icon(Icons.arrow_forward_rounded),
+              ],
+            ),
           ),
         ),
       ),
@@ -697,7 +752,10 @@ class _RemotePhotoState extends State<_RemotePhoto> {
           future: _bytes,
           builder: (context, snapshot) => snapshot.hasData
               ? Image.memory(snapshot.data!, fit: BoxFit.cover)
-              : Container(color: AppColors.line, child: const Icon(Icons.image_outlined, color: AppColors.muted)),
+              : Container(
+                  color: AppColors.line,
+                  child: Icon(Icons.image_outlined, color: AppColors.muted),
+                ),
         ),
       ),
     );
@@ -724,9 +782,12 @@ class _JobStatusScreenState extends State<JobStatusScreen> with _LiveBooking {
       appBar: AppBar(title: const Text('Job status')),
       body: booking == null
           ? (loadError != null
-              ? ErrorState(error: loadError!, onRetry: refresh)
-              : const Center(child: CircularProgressIndicator(color: AppColors.ink)))
-          : RefreshIndicator(onRefresh: refresh, child: _JobStatusView(booking: booking!, onRefresh: refresh)),
+                ? ErrorState(error: loadError!, onRetry: refresh)
+                : Center(child: CircularProgressIndicator(color: AppColors.ink)))
+          : RefreshIndicator(
+              onRefresh: refresh,
+              child: _JobStatusView(booking: booking!, onRefresh: refresh),
+            ),
     );
   }
 }
@@ -813,7 +874,7 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
                         b!.status == 'EN_ROUTE' && b.etaMinutes != null
                             ? 'On the way · ETA ${b.etaMinutes} min'
                             : statusStyle(b.status, b.type).label.toLowerCase(),
-                        style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                        style: TextStyle(fontSize: 12, color: AppColors.muted),
                       ),
                     ],
                   ),
@@ -846,7 +907,7 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: m.mine ? AppColors.ink : AppColors.surface,
+                      color: m.mine ? AppColors.solid : AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: m.mine ? null : Border.all(color: AppColors.line),
                     ),
@@ -897,7 +958,7 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
                     ),
                     const SizedBox(width: 8),
                     IconButton.filled(
-                      style: IconButton.styleFrom(backgroundColor: AppColors.ink, minimumSize: const Size(52, 52)),
+                      style: IconButton.styleFrom(backgroundColor: AppColors.solid, minimumSize: const Size(52, 52)),
                       onPressed: _send,
                       icon: const Icon(Icons.send_rounded, color: AppColors.yellow),
                     ),
@@ -906,7 +967,7 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
               ),
             ),
           ] else
-            const SafeArea(
+            SafeArea(
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Text('Chat is closed for this booking.', style: TextStyle(color: AppColors.muted)),
@@ -963,58 +1024,66 @@ class _CostApprovalScreenState extends State<CostApprovalScreen> with _LiveBooki
     return Scaffold(
       appBar: AppBar(title: const Text('Approve cost')),
       body: b == null
-          ? const Center(child: CircularProgressIndicator(color: AppColors.ink))
+          ? Center(child: CircularProgressIndicator(color: AppColors.ink))
           : q == null
-              ? const EmptyState(icon: Icons.task_alt_rounded, title: 'Nothing to approve right now')
-              : ListView(
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    Text('#${b.reference}', style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
-                    const Text('Total to approve', style: TextStyle(color: AppColors.inkSoft)),
-                    Text(formatLkr(q.totalCents), style: Theme.of(context).textTheme.headlineMedium),
-                    const SizedBox(height: 16),
-                    if (q.note != null)
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Avatar(name: b.technician!.displayName, size: 40),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Note from ${b.technician!.firstName}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                                    const SizedBox(height: 4),
-                                    Text(q.note!, style: const TextStyle(height: 1.4)),
-                                  ],
+          ? const EmptyState(icon: Icons.task_alt_rounded, title: 'Nothing to approve right now')
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Text(
+                  '#${b.reference}',
+                  style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text('Total to approve', style: TextStyle(color: AppColors.inkSoft)),
+                Text(formatLkr(q.totalCents), style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 16),
+                if (q.note != null)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Avatar(name: b.technician!.displayName, size: 40),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Note from ${b.technician!.firstName}',
+                                  style: const TextStyle(fontWeight: FontWeight.w700),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(q.note!, style: const TextStyle(height: 1.4)),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                    const SizedBox(height: 12),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
-                        child: CostLines(
-                          visitFeeCents: q.visitFeeCents,
-                          labourCents: q.labourCents,
-                          partsCents: q.partsCents,
-                          totalCents: q.totalCents,
-                          items: q.items,
-                        ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    const Text('Work starts only after you approve. If the cost changes, you will be asked again.',
-                        style: TextStyle(color: AppColors.muted, height: 1.4)),
-                  ],
+                  ),
+                const SizedBox(height: 12),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
+                    child: CostLines(
+                      visitFeeCents: q.visitFeeCents,
+                      labourCents: q.labourCents,
+                      partsCents: q.partsCents,
+                      totalCents: q.totalCents,
+                      items: q.items,
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 12),
+                Text(
+                  'Work starts only after you approve. If the cost changes, you will be asked again.',
+                  style: TextStyle(color: AppColors.muted, height: 1.4),
+                ),
+              ],
+            ),
       bottomNavigationBar: q == null
           ? null
           : BottomAction(
@@ -1080,11 +1149,14 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
     return Scaffold(
       appBar: AppBar(title: const Text('Payment')),
       body: b == null || payment == null
-          ? const Center(child: CircularProgressIndicator(color: AppColors.ink))
+          ? Center(child: CircularProgressIndicator(color: AppColors.ink))
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                Text('#${b.reference}', style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+                Text(
+                  '#${b.reference}',
+                  style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   'Repair completed by ${b.technician?.firstName ?? 'your technician'}'
@@ -1092,13 +1164,22 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 if (b.photos.any((p) => p.kind == 'AFTER'))
-                  PhotoStrip(title: 'After photos', bookingId: b.id, photos: b.photos.where((p) => p.kind == 'AFTER').toList()),
+                  PhotoStrip(
+                    title: 'After photos',
+                    bookingId: b.id,
+                    photos: b.photos.where((p) => p.kind == 'AFTER').toList(),
+                  ),
                 const SizedBox(height: 16),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
                     child: quotation == null
-                        ? CostLines(visitFeeCents: b.visitFeeCents, labourCents: 0, partsCents: 0, totalCents: payment.amountCents)
+                        ? CostLines(
+                            visitFeeCents: b.visitFeeCents,
+                            labourCents: 0,
+                            partsCents: 0,
+                            totalCents: payment.amountCents,
+                          )
                         : CostLines(
                             visitFeeCents: quotation.visitFeeCents,
                             labourCents: quotation.labourCents,
@@ -1114,8 +1195,20 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
                   subtitle: 'Pay ${b.technician?.firstName ?? 'the technician'} directly',
                   selected: true,
                 ),
-                const _MethodTile(icon: Icons.credit_card_rounded, title: 'Card', subtitle: 'Coming soon', selected: false, disabled: true),
-                const _MethodTile(icon: Icons.qr_code_rounded, title: 'Mobile wallet', subtitle: 'Coming soon', selected: false, disabled: true),
+                const _MethodTile(
+                  icon: Icons.credit_card_rounded,
+                  title: 'Card',
+                  subtitle: 'Coming soon',
+                  selected: false,
+                  disabled: true,
+                ),
+                const _MethodTile(
+                  icon: Icons.qr_code_rounded,
+                  title: 'Mobile wallet',
+                  subtitle: 'Coming soon',
+                  selected: false,
+                  disabled: true,
+                ),
                 if (_confirmed) ...[
                   const SizedBox(height: 16),
                   Container(
@@ -1123,12 +1216,17 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
                     decoration: BoxDecoration(color: AppColors.yellowSoft, borderRadius: BorderRadius.circular(14)),
                     child: Row(
                       children: [
-                        const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.ink)),
+                        SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.ink),
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                              'Hand ${formatLkr(payment.amountCents)} to ${b.technician?.firstName ?? 'the technician'}. '
-                              'Your receipt appears as soon as they confirm.'),
+                            'Hand ${formatLkr(payment.amountCents)} to ${b.technician?.firstName ?? 'the technician'}. '
+                            'Your receipt appears as soon as they confirm.',
+                          ),
                         ),
                       ],
                     ),
@@ -1153,7 +1251,13 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
 }
 
 class _MethodTile extends StatelessWidget {
-  const _MethodTile({required this.icon, required this.title, required this.subtitle, required this.selected, this.disabled = false});
+  const _MethodTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    this.disabled = false,
+  });
 
   final IconData icon;
   final String title;
@@ -1212,17 +1316,19 @@ class ReceiptScreen extends StatelessWidget {
                 Center(
                   child: Column(
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 32,
                         backgroundColor: AppColors.yellow,
-                        child: Icon(Icons.check_rounded, size: 38, color: AppColors.ink),
+                        child: const Icon(Icons.check_rounded, size: 38, color: AppColors.black),
                       ),
                       const SizedBox(height: 12),
                       Text('Payment received', style: Theme.of(context).textTheme.headlineSmall),
                       const SizedBox(height: 4),
-                      Text('${formatLkr(payment.amountCents)} paid in ${payment.method.toLowerCase()}',
-                          style: const TextStyle(color: AppColors.inkSoft)),
-                      Text('Receipt #${b.reference}', style: const TextStyle(color: AppColors.muted)),
+                      Text(
+                        '${formatLkr(payment.amountCents)} paid in ${payment.method.toLowerCase()}',
+                        style: TextStyle(color: AppColors.inkSoft),
+                      ),
+                      Text('Receipt #${b.reference}', style: TextStyle(color: AppColors.muted)),
                     ],
                   ),
                 ),
@@ -1243,7 +1349,7 @@ class ReceiptScreen extends StatelessWidget {
                                   Text(tech.displayName, style: const TextStyle(fontWeight: FontWeight.w700)),
                                   Text(
                                     '${b.categoryName}${payment.paidAt == null ? '' : ' · ${formatDay(payment.paidAt!)} · ${formatTime(payment.paidAt!)}'}',
-                                    style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                                    style: TextStyle(color: AppColors.muted, fontSize: 13),
                                   ),
                                 ],
                               ),
@@ -1252,8 +1358,13 @@ class ReceiptScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         quotation == null
-                            ? CostLines(visitFeeCents: b.visitFeeCents, labourCents: 0, partsCents: 0,
-                                totalCents: payment.amountCents, totalLabel: 'Total paid')
+                            ? CostLines(
+                                visitFeeCents: b.visitFeeCents,
+                                labourCents: 0,
+                                partsCents: 0,
+                                totalCents: payment.amountCents,
+                                totalLabel: 'Total paid',
+                              )
                             : CostLines(
                                 visitFeeCents: quotation.visitFeeCents,
                                 labourCents: quotation.labourCents,
@@ -1294,7 +1405,10 @@ class ReceiptScreen extends StatelessWidget {
             ),
             bottomNavigationBar: b.rating != null
                 ? BottomAction(
-                    child: OutlinedButton(onPressed: () => context.go('/home'), child: Text('You rated ${tech.firstName} ${b.rating}★ · Done')),
+                    child: OutlinedButton(
+                      onPressed: () => context.go('/home'),
+                      child: Text('You rated ${tech.firstName} ${b.rating}★ · Done'),
+                    ),
                   )
                 : BottomAction(
                     child: FilledButton(
@@ -1355,7 +1469,7 @@ class _RatingScreenState extends State<RatingScreen> {
         future: _booking,
         builder: (context, snapshot) {
           final b = snapshot.data;
-          if (b == null) return const Center(child: CircularProgressIndicator(color: AppColors.ink));
+          if (b == null) return Center(child: CircularProgressIndicator(color: AppColors.ink));
           final tech = b.technician!;
           return ListView(
             padding: const EdgeInsets.all(20),
@@ -1363,7 +1477,9 @@ class _RatingScreenState extends State<RatingScreen> {
               Center(child: Avatar(name: tech.displayName, size: 72)),
               const SizedBox(height: 12),
               Center(child: Text('How was ${tech.firstName}?', style: Theme.of(context).textTheme.headlineSmall)),
-              Center(child: Text('${b.categoryName} · ${b.title}', style: const TextStyle(color: AppColors.muted))),
+              Center(
+                child: Text('${b.categoryName} · ${b.title}', style: TextStyle(color: AppColors.muted)),
+              ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1372,12 +1488,16 @@ class _RatingScreenState extends State<RatingScreen> {
                     IconButton(
                       iconSize: 44,
                       onPressed: () => setState(() => _rating = i),
-                      icon: Icon(i <= _rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                          color: i <= _rating ? const Color(0xFFF5A300) : AppColors.line),
+                      icon: Icon(
+                        i <= _rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                        color: i <= _rating ? const Color(0xFFF5A300) : AppColors.line,
+                      ),
                     ),
                 ],
               ),
-              Center(child: Text(_words[_rating], style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
+              Center(
+                child: Text(_words[_rating], style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              ),
               const SectionTitle('What went well?'),
               Wrap(
                 spacing: 8,

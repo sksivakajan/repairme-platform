@@ -1,42 +1,68 @@
 import 'package:flutter/material.dart';
 
 import '../core/api_client.dart';
+import '../core/appearance.dart';
 import '../core/format.dart';
 import '../core/session.dart';
 import '../data/models.dart';
 import '../data/repository.dart';
 import '../theme/app_theme.dart';
 
-/// Gives every screen access to the session and the API repository.
+/// Gives every screen access to the session, the API repository and the
+/// appearance setting.
 class AppScope extends InheritedWidget {
-  const AppScope({super.key, required this.session, required this.repo, required super.child});
+  const AppScope({
+    super.key,
+    required this.session,
+    required this.repo,
+    required this.appearance,
+    required super.child,
+  });
 
   final Session session;
   final Repository repo;
+  final Appearance appearance;
 
   static AppScope of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppScope>()!;
 
   @override
   bool updateShouldNotify(AppScope oldWidget) =>
-      session != oldWidget.session || repo != oldWidget.repo;
+      session != oldWidget.session || repo != oldWidget.repo || appearance != oldWidget.appearance;
 }
 
 extension AppContext on BuildContext {
   Repository get repo => AppScope.of(this).repo;
   Session get session => AppScope.of(this).session;
+  Appearance get appearance => AppScope.of(this).appearance;
 
   void showError(Object error) {
     final message = error is ApiException ? error.message : error.toString();
     ScaffoldMessenger.of(this)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message), backgroundColor: AppColors.ink));
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   void toast(String message) {
     ScaffoldMessenger.of(this)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+/// Content on a yellow background: always black text and icons, in both
+/// light and dark mode.
+class OnYellow extends StatelessWidget {
+  const OnYellow({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTextStyle.merge(
+      style: const TextStyle(color: AppColors.black),
+      child: IconTheme.merge(data: const IconThemeData(color: AppColors.black), child: child),
+    );
   }
 }
 
@@ -74,7 +100,7 @@ class _AsyncViewState<T> extends State<AsyncView<T>> {
           return ErrorState(error: snapshot.error!, onRetry: _reload);
         }
         if (data == null) {
-          return const Center(child: CircularProgressIndicator(color: AppColors.ink));
+          return Center(child: CircularProgressIndicator(color: AppColors.ink));
         }
         return widget.builder(context, data, _reload);
       },
@@ -98,7 +124,7 @@ class ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded, size: 40, color: AppColors.muted),
+            Icon(Icons.wifi_off_rounded, size: 40, color: AppColors.muted),
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
@@ -128,7 +154,7 @@ class EmptyState extends StatelessWidget {
           Text(title, style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
           if (message != null) ...[
             const SizedBox(height: 6),
-            Text(message!, style: const TextStyle(color: AppColors.muted), textAlign: TextAlign.center),
+            Text(message!, style: TextStyle(color: AppColors.muted), textAlign: TextAlign.center),
           ],
         ],
       ),
@@ -164,7 +190,7 @@ class CategoryBadge extends StatelessWidget {
         color: highlight ? AppColors.yellow : AppColors.background,
         borderRadius: BorderRadius.circular(size * 0.3),
       ),
-      child: Icon(categoryIcon(iconKey), size: size * 0.52, color: AppColors.ink),
+      child: Icon(categoryIcon(iconKey), size: size * 0.52, color: highlight ? AppColors.black : AppColors.ink),
     );
   }
 }
@@ -180,11 +206,11 @@ class Avatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: size / 2,
-      backgroundColor: dark ? AppColors.ink : AppColors.yellow,
+      backgroundColor: dark ? AppColors.solid : AppColors.yellow,
       child: Text(
         initials(name),
         style: TextStyle(
-          color: dark ? AppColors.yellow : AppColors.ink,
+          color: dark ? AppColors.yellow : AppColors.black,
           fontWeight: FontWeight.w800,
           fontSize: size * 0.36,
         ),
@@ -196,15 +222,15 @@ class Avatar extends StatelessWidget {
 /// Booking status as the customer sees it (C22 tags).
 ({String label, Color background, Color foreground}) statusStyle(String status, BookingType type) {
   return switch (status) {
-    'SEARCHING' => (label: 'FINDING', background: AppColors.yellow, foreground: AppColors.ink),
-    'OPERATOR_ASSIGNING' => (label: 'ASSIGNING', background: AppColors.yellow, foreground: AppColors.ink),
+    'SEARCHING' => (label: 'FINDING', background: AppColors.yellow, foreground: AppColors.black),
+    'OPERATOR_ASSIGNING' => (label: 'ASSIGNING', background: AppColors.yellow, foreground: AppColors.black),
     'ASSIGNED' => type == BookingType.emergency
         ? (label: 'ASSIGNED', background: AppColors.yellowSoft, foreground: AppColors.ink)
         : (label: 'SCHEDULED', background: const Color(0xFFE3EEFB), foreground: AppColors.info),
-    'EN_ROUTE' => (label: 'ON THE WAY', background: AppColors.yellow, foreground: AppColors.ink),
+    'EN_ROUTE' => (label: 'ON THE WAY', background: AppColors.yellow, foreground: AppColors.black),
     'ARRIVED' || 'AWAITING_APPROVAL' || 'IN_PROGRESS' =>
-      (label: 'WORKING', background: AppColors.ink, foreground: AppColors.yellow),
-    'COMPLETED' => (label: 'PAYMENT DUE', background: AppColors.yellow, foreground: AppColors.ink),
+      (label: 'WORKING', background: AppColors.solid, foreground: AppColors.yellow),
+    'COMPLETED' => (label: 'PAYMENT DUE', background: AppColors.yellow, foreground: AppColors.black),
     'PAID' => (label: 'COMPLETED', background: const Color(0xFFE2F3E8), foreground: AppColors.success),
     'CANCELLED' => (label: 'CANCELLED', background: AppColors.line, foreground: AppColors.muted),
     _ => (label: status, background: AppColors.line, foreground: AppColors.ink),
@@ -265,11 +291,11 @@ class MapPanel extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.location_on_rounded, size: 40, color: AppColors.ink),
+                const Icon(Icons.location_on_rounded, size: 40, color: AppColors.black),
                 const SizedBox(height: 4),
                 Text(area.toUpperCase(),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, letterSpacing: 2, color: AppColors.inkSoft)),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800, letterSpacing: 2, color: Color(0xFF3D3D3A))),
               ],
             ),
           ),
@@ -334,12 +360,12 @@ class StepHeader extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         Text('Step $step of 4 · $label',
-            style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+            style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         Text(title, style: Theme.of(context).textTheme.headlineSmall),
         if (subtitle != null) ...[
           const SizedBox(height: 6),
-          Text(subtitle!, style: const TextStyle(color: AppColors.muted)),
+          Text(subtitle!, style: TextStyle(color: AppColors.muted)),
         ],
       ],
     );
@@ -355,7 +381,7 @@ class BottomAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.line)),
       ),

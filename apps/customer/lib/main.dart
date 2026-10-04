@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'config/env.dart';
+import 'core/appearance.dart';
 import 'core/api_client.dart';
 import 'core/session.dart';
 import 'data/repository.dart';
@@ -14,7 +15,8 @@ Future<void> main() async {
     await Firebase.initializeApp(options: Env.firebaseOptions);
   }
 
-  final session = Session(await SharedPreferences.getInstance())..start();
+  final prefs = await SharedPreferences.getInstance();
+  final session = Session(prefs)..start();
   final api = ApiClient(authHeader: session.authHeader);
-  runApp(RepairMeApp(session: session, repo: Repository(api)));
+  runApp(RepairMeApp(session: session, repo: Repository(api), appearance: Appearance(prefs)));
 }

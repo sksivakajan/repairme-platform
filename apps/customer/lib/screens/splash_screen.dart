@@ -4,6 +4,9 @@ import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand.dart';
 
+/// The splash is always white, like the Android launch screen before it.
+const _grey = Color(0xFF73726C);
+
 /// C01 · Splash. The mark assembles itself, then the wordmark and tagline
 /// appear while a loading bar fills; [onFinished] fires when it is done.
 class SplashScreen extends StatefulWidget {
@@ -65,13 +68,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    RepairMeLogo(size: 116, progress: _logo.value),
+                    RepairMeLogo(size: 116, palette: LogoPalette.onLight, progress: _logo.value),
                     const SizedBox(height: 18),
                     Opacity(
                       opacity: _wordmark.value,
                       child: Transform.translate(
                         offset: Offset(0, 16 * (1 - _wordmark.value)),
-                        child: const Wordmark(fontSize: 40),
+                        child: const Wordmark(fontSize: 40, onDark: false),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -80,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       child: Text(
                         'FIXED. FAST. VERIFIED.',
                         style: TextStyle(
-                          color: AppColors.muted,
+                          color: _grey,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 1.5 + 2.5 * _tagline.value,
@@ -104,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           height: 4,
                           alignment: Alignment.centerLeft,
                           decoration: BoxDecoration(
-                            color: AppColors.line,
+                            color: const Color(0xFFECEBE6),
                             borderRadius: BorderRadius.circular(2),
                           ),
                           child: FractionallySizedBox(
@@ -120,9 +123,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         const SizedBox(height: 14),
                         Opacity(
                           opacity: _footer.value,
-                          child: const Text(
+                          child: Text(
                             'Proudly Sri Lankan',
-                            style: TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: _grey, fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ),
                       ],

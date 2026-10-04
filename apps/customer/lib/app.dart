@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/appearance.dart';
 import 'core/session.dart';
 import 'data/booking_draft.dart';
 import 'data/models.dart';
@@ -16,35 +17,66 @@ import 'theme/app_theme.dart';
 import 'widgets/common.dart';
 
 class RepairMeApp extends StatefulWidget {
-  const RepairMeApp({super.key, required this.session, required this.repo});
+  const RepairMeApp({super.key, required this.session, required this.repo, required this.appearance});
 
   final Session session;
   final Repository repo;
+  final Appearance appearance;
 
   @override
   State<RepairMeApp> createState() => _RepairMeAppState();
 }
 
-class _RepairMeAppState extends State<RepairMeApp> {
+class _RepairMeAppState extends State<RepairMeApp> with WidgetsBindingObserver {
   /// The splash animation plays once per app start before any other screen.
   final _splashDone = ValueNotifier(false);
   late final GoRouter _router = _buildRouter(widget.session, _splashDone);
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    widget.appearance.addListener(_rebuild);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    widget.appearance.removeListener(_rebuild);
     _splashDone.dispose();
     super.dispose();
   }
 
+  /// Redraws every screen with the new palette, keeping navigation and state.
+  /// (Widgets read [AppColors] directly, so const widgets must be rebuilt too.)
+  void _rebuild() {
+    setState(() {});
+    void markDirty(Element element) {
+      element.markNeedsBuild();
+      element.visitChildren(markDirty);
+    }
+
+    (context as Element).visitChildren(markDirty);
+  }
+
+  /// Follows the phone's dark mode when the customer chose "System".
+  @override
+  void didChangePlatformBrightness() => _rebuild();
+
   @override
   Widget build(BuildContext context) {
+    final brightness = widget.appearance.resolve(
+      WidgetsBinding.instance.platformDispatcher.platformBrightness,
+    );
+    AppColors.apply(brightness);
     return AppScope(
       session: widget.session,
       repo: widget.repo,
+      appearance: widget.appearance,
       child: MaterialApp.router(
         title: 'RepairMe',
         debugShowCheckedModeBanner: false,
-        theme: buildTheme(),
+        theme: buildTheme(brightness),
         routerConfig: _router,
       ),
     );

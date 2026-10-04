@@ -25,9 +25,24 @@ class _BookingTypeScreenState extends State<BookingTypeScreen> {
   @override
   Widget build(BuildContext context) {
     const options = [
-      (BookingType.emergency, Icons.bolt_rounded, 'The nearest available technician comes as soon as possible.', 'Avg. arrival 18 min'),
-      (BookingType.scheduled, Icons.calendar_month_rounded, 'Choose a date and a time window that suits you.', 'Pick a slot'),
-      (BookingType.inspection, Icons.straighten_rounded, 'A visit to inspect, measure and give you a quote first.', 'Quote before work'),
+      (
+        BookingType.emergency,
+        Icons.bolt_rounded,
+        'The nearest available technician comes as soon as possible.',
+        'Avg. arrival 18 min',
+      ),
+      (
+        BookingType.scheduled,
+        Icons.calendar_month_rounded,
+        'Choose a date and a time window that suits you.',
+        'Pick a slot',
+      ),
+      (
+        BookingType.inspection,
+        Icons.straighten_rounded,
+        'A visit to inspect, measure and give you a quote first.',
+        'Quote before work',
+      ),
     ];
     return Scaffold(
       appBar: AppBar(title: Text(widget.draft.category.name)),
@@ -52,16 +67,19 @@ class _BookingTypeScreenState extends State<BookingTypeScreen> {
                         color: type == BookingType.emergency ? AppColors.yellow : AppColors.background,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(icon),
+                      child: Icon(icon, color: type == BookingType.emergency ? AppColors.black : AppColors.ink),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(bookingTypeLabel(type), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                          Text(
+                            bookingTypeLabel(type),
+                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                          ),
                           const SizedBox(height: 4),
-                          Text(body, style: const TextStyle(color: AppColors.inkSoft)),
+                          Text(body, style: TextStyle(color: AppColors.inkSoft)),
                           const SizedBox(height: 8),
                           Text(hint, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                         ],
@@ -189,7 +207,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
             maxLength: 1000,
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
-                hintText: 'What happened, when it started, anything the technician should know (at least 10 characters)'),
+              hintText: 'What happened, when it started, anything the technician should know (at least 10 characters)',
+            ),
             onChanged: (value) => setState(() => draft.description = value),
           ),
           Wrap(
@@ -275,14 +294,20 @@ class _PhotosScreenState extends State<PhotosScreen> {
                 Stack(
                   fit: StackFit.expand,
                   children: [
-                    ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.memory(photo.bytes, fit: BoxFit.cover)),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.memory(photo.bytes, fit: BoxFit.cover),
+                    ),
                     Positioned(
                       top: 4,
                       right: 4,
                       child: GestureDetector(
                         onTap: () => setState(() => photos.removeAt(i)),
-                        child: const CircleAvatar(radius: 12, backgroundColor: AppColors.ink,
-                            child: Icon(Icons.close_rounded, size: 14, color: Colors.white)),
+                        child: CircleAvatar(
+                          radius: 12,
+                          backgroundColor: AppColors.solid,
+                          child: Icon(Icons.close_rounded, size: 14, color: Colors.white),
+                        ),
                       ),
                     ),
                   ],
@@ -299,7 +324,10 @@ class _PhotosScreenState extends State<PhotosScreen> {
                     ),
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Icon(Icons.add_rounded), Text('Add', style: TextStyle(fontWeight: FontWeight.w600))],
+                      children: [
+                        Icon(Icons.add_rounded),
+                        Text('Add', style: TextStyle(fontWeight: FontWeight.w600)),
+                      ],
                     ),
                   ),
                 ),
@@ -328,8 +356,10 @@ class _PhotosScreenState extends State<PhotosScreen> {
           const SizedBox(height: 20),
           const Text('Tips for good photos', style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
-          const Text('· Show the whole area, then a close-up\n· Include any model or label plate\n· Do not touch exposed wires',
-              style: TextStyle(color: AppColors.inkSoft, height: 1.6)),
+          Text(
+            '· Show the whole area, then a close-up\n· Include any model or label plate\n· Do not touch exposed wires',
+            style: TextStyle(color: AppColors.inkSoft, height: 1.6),
+          ),
         ],
       ),
       bottomNavigationBar: BottomAction(
@@ -437,13 +467,12 @@ class _LocationScreenState extends State<LocationScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                child: StepHeader(
-                  step: 3,
-                  label: 'Location',
-                  title: 'Where should the technician come?',
-                ),
+                child: StepHeader(step: 3, label: 'Location', title: 'Where should the technician come?'),
               ),
-              MapPanel(area: showForm ? (_area.text.isEmpty ? 'Your area' : _area.text) : (selected?.address.area ?? '…'), height: 160),
+              MapPanel(
+                area: showForm ? (_area.text.isEmpty ? 'Your area' : _area.text) : (selected?.address.area ?? '…'),
+                height: 160,
+              ),
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -455,7 +484,10 @@ class _LocationScreenState extends State<LocationScreen> {
                         children: [
                           for (final address in saved)
                             ChoiceChip(
-                              avatar: Icon(address.label == 'OFFICE' ? Icons.business_rounded : Icons.home_rounded, size: 18),
+                              avatar: Icon(
+                                address.label == 'OFFICE' ? Icons.business_rounded : Icons.home_rounded,
+                                size: 18,
+                              ),
                               label: Text(address.labelText),
                               selected: !_addingNew && _savedId == address.id,
                               onSelected: (_) => setState(() => _selectSaved(address)),
@@ -474,33 +506,50 @@ class _LocationScreenState extends State<LocationScreen> {
                         child: ListTile(
                           leading: const Icon(Icons.location_on_rounded),
                           title: Text(selected.address.oneLine, style: const TextStyle(fontWeight: FontWeight.w700)),
-                          subtitle: Text([selected.address.city, selected.address.landmark]
-                              .whereType<String>()
-                              .where((s) => s.isNotEmpty)
-                              .join(' · ')),
+                          subtitle: Text(
+                            [
+                              selected.address.city,
+                              selected.address.landmark,
+                            ].whereType<String>().where((s) => s.isNotEmpty).join(' · '),
+                          ),
                         ),
                       ),
                     if (showForm) ...[
-                      TextField(controller: _line1, decoration: const InputDecoration(labelText: 'Street address'),
-                          onChanged: (_) => setState(() {})),
+                      TextField(
+                        controller: _line1,
+                        decoration: const InputDecoration(labelText: 'Street address'),
+                        onChanged: (_) => setState(() {}),
+                      ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
                           Expanded(
-                            child: TextField(controller: _area, decoration: const InputDecoration(labelText: 'Area'),
-                                onChanged: (_) => setState(() {})),
+                            child: TextField(
+                              controller: _area,
+                              decoration: const InputDecoration(labelText: 'Area'),
+                              onChanged: (_) => setState(() {}),
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: TextField(controller: _city, decoration: const InputDecoration(labelText: 'City'),
-                                onChanged: (_) => setState(() {})),
+                            child: TextField(
+                              controller: _city,
+                              decoration: const InputDecoration(labelText: 'City'),
+                              onChanged: (_) => setState(() {}),
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 10),
-                      TextField(controller: _house, decoration: const InputDecoration(labelText: 'House / apartment number')),
+                      TextField(
+                        controller: _house,
+                        decoration: const InputDecoration(labelText: 'House / apartment number'),
+                      ),
                       const SizedBox(height: 10),
-                      TextField(controller: _landmark, decoration: const InputDecoration(labelText: 'Landmark or directions')),
+                      TextField(
+                        controller: _landmark,
+                        decoration: const InputDecoration(labelText: 'Landmark or directions'),
+                      ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
@@ -558,7 +607,9 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
   List<DateTime> get _days {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final hasSlotToday = _windows.any((w) => today.add(Duration(hours: w.$1)).isAfter(now.add(const Duration(hours: 1))));
+    final hasSlotToday = _windows.any(
+      (w) => today.add(Duration(hours: w.$1)).isAfter(now.add(const Duration(hours: 1))),
+    );
     return [for (var i = hasSlotToday ? 0 : 1; i < 15; i++) today.add(Duration(days: i))];
   }
 
@@ -574,13 +625,18 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
   Widget build(BuildContext context) {
     final days = _days;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.draft.type == BookingType.inspection ? 'Inspection visit' : 'Schedule a visit')),
+      appBar: AppBar(
+        title: Text(widget.draft.type == BookingType.inspection ? 'Inspection visit' : 'Schedule a visit'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Text('When should we come?', style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 4),
-          Text(DateFormat('MMMM y').format(_day), style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
+          Text(
+            DateFormat('MMMM y').format(_day),
+            style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 14),
           SizedBox(
             height: 78,
@@ -599,18 +655,29 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                   child: Container(
                     width: 58,
                     decoration: BoxDecoration(
-                      color: selected ? AppColors.ink : AppColors.surface,
+                      color: selected ? AppColors.solid : AppColors.surface,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: selected ? AppColors.ink : AppColors.line),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(DateFormat('EEE').format(day),
-                            style: TextStyle(color: selected ? AppColors.yellow : AppColors.muted, fontWeight: FontWeight.w600)),
+                        Text(
+                          DateFormat('EEE').format(day),
+                          style: TextStyle(
+                            color: selected ? AppColors.yellow : AppColors.muted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text('${day.day}',
-                            style: TextStyle(color: selected ? Colors.white : AppColors.ink, fontSize: 20, fontWeight: FontWeight.w800)),
+                        Text(
+                          '${day.day}',
+                          style: TextStyle(
+                            color: selected ? Colors.white : AppColors.ink,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -632,7 +699,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'The technician will confirm the visit the day before. You can reschedule free until 2 hours before.',
             style: TextStyle(color: AppColors.muted, height: 1.4),
           ),
@@ -643,8 +710,10 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_window != null) ...[
-              Text('Selected: ${DateFormat('EEE d MMM').format(_day)} · ${_label(_window!)}',
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(
+                'Selected: ${DateFormat('EEE d MMM').format(_day)} · ${_label(_window!)}',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 10),
             ],
             FilledButton(
@@ -719,14 +788,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(draft.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-                            Text(draft.category.name, style: const TextStyle(color: AppColors.muted)),
+                            Text(draft.category.name, style: TextStyle(color: AppColors.muted)),
                           ],
                         ),
                       ),
                       Pill(
                         label: bookingTypeLabel(draft.type).toUpperCase(),
                         background: draft.type == BookingType.emergency ? AppColors.yellow : AppColors.background,
-                        foreground: AppColors.ink,
+                        foreground: draft.type == BookingType.emergency ? AppColors.black : AppColors.ink,
                       ),
                     ],
                   ),
@@ -734,7 +803,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   FutureBuilder<List<SavedAddress>>(
                     future: _saved,
                     builder: (context, snapshot) {
-                      final address = draft.address ??
+                      final address =
+                          draft.address ??
                           snapshot.data?.where((a) => a.id == draft.savedAddressId).firstOrNull?.address;
                       return _ReviewRow(
                         icon: Icons.location_on_outlined,
@@ -762,18 +832,27 @@ class _ReviewScreenState extends State<ReviewScreen> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  Row(children: [
-                    const Expanded(child: Text('Visit fee')),
-                    Text(formatLkr(draft.category.visitFeeCents), style: const TextStyle(fontWeight: FontWeight.w700)),
-                  ]),
+                  Row(
+                    children: [
+                      const Expanded(child: Text('Visit fee')),
+                      Text(
+                        formatLkr(draft.category.visitFeeCents),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
-                  const Row(children: [
-                    Expanded(child: Text('Labour and parts')),
-                    Text('Quoted on site', style: TextStyle(color: AppColors.muted)),
-                  ]),
+                  Row(
+                    children: [
+                      Expanded(child: Text('Labour and parts')),
+                      Text('Quoted on site', style: TextStyle(color: AppColors.muted)),
+                    ],
+                  ),
                   const SizedBox(height: 12),
-                  const Text('You will approve the final cost in the app before any work is charged.',
-                      style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                  Text(
+                    'You will approve the final cost in the app before any work is charged.',
+                    style: TextStyle(color: AppColors.muted, fontSize: 13),
+                  ),
                 ],
               ),
             ),
@@ -788,7 +867,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomAction(child: BusyButton(label: 'Request technician', onPressed: _submit)),
+      bottomNavigationBar: BottomAction(
+        child: BusyButton(label: 'Request technician', onPressed: _submit),
+      ),
     );
   }
 }
@@ -815,7 +896,7 @@ class _ReviewRow extends StatelessWidget {
               children: [
                 Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
                 if (subtitle != null && subtitle!.isNotEmpty)
-                  Text(subtitle!, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                  Text(subtitle!, style: TextStyle(color: AppColors.muted, fontSize: 13)),
               ],
             ),
           ),

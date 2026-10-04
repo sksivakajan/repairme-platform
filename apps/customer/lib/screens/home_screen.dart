@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -312,8 +313,7 @@ class _PromoCarouselState extends State<_PromoCarousel> {
   int _page = 0;
 
   List<Widget> _slides(BuildContext context) => [
-        const _BrandBanner(),
-        const _ImageBanner(asset: 'assets/images/banner_team.jpg', label: 'RepairMe team', alignment: Alignment.center),
+        const _TeamBanner(),
         _ImageBanner(
           asset: 'assets/images/banner_emergency.jpg',
           label: 'Need help right now? Get emergency help',
@@ -330,6 +330,7 @@ class _PromoCarouselState extends State<_PromoCarousel> {
           onTap: () => HomeScreen.startRequest(context, BookingType.inspection),
         ),
         _EmergencyBanner(onlineTechnicians: widget.onlineTechnicians),
+        const _BrandBanner(),
       ];
 
   @override
@@ -387,15 +388,14 @@ class _PromoCarouselState extends State<_PromoCarousel> {
   }
 }
 
-/// A banner made from artwork. Wide banners are fitted to the height and
-/// keep their left side, where the headline and button are.
+/// A banner made from artwork, shown whole. A blurred copy of the same
+/// image fills the space around it.
 class _ImageBanner extends StatelessWidget {
-  const _ImageBanner({required this.asset, required this.label, this.onTap, this.alignment = Alignment.centerLeft});
+  const _ImageBanner({required this.asset, required this.label, this.onTap});
 
   final String asset;
   final String label;
   final VoidCallback? onTap;
-  final Alignment alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -408,10 +408,78 @@ class _ImageBanner extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(asset, fit: BoxFit.cover, alignment: alignment, filterQuality: FilterQuality.medium),
+            ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: Image.asset(asset, fit: BoxFit.cover),
+            ),
+            ColoredBox(color: Colors.black.withValues(alpha: 0.25)),
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(asset, fit: BoxFit.contain, filterQuality: FilterQuality.medium),
+              ),
+            ),
             if (onTap != null) Material(color: Colors.transparent, child: InkWell(onTap: onTap)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The team photo with "Built in Sri Lanka, for every Sri Lankan".
+class _TeamBanner extends StatelessWidget {
+  const _TeamBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/banner_team.jpg',
+            fit: BoxFit.cover,
+            alignment: const Alignment(0.6, -0.2),
+            filterQuality: FilterQuality.medium,
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withValues(alpha: 0.92),
+                  Colors.black.withValues(alpha: 0.78),
+                  Colors.black.withValues(alpha: 0),
+                ],
+                stops: const [0, 0.42, 0.8],
+              ),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(18, 20, 18, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Built in Sri Lanka,',
+                    style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700, height: 1.2)),
+                Text('for every',
+                    style: TextStyle(color: AppColors.yellow, fontSize: 19, fontWeight: FontWeight.w700, height: 1.2)),
+                Text('Sri Lankan',
+                    style: TextStyle(color: AppColors.yellow, fontSize: 19, fontWeight: FontWeight.w700, height: 1.2)),
+                Spacer(),
+                Row(
+                  children: [
+                    Text('🇱🇰', style: TextStyle(fontSize: 14)),
+                    SizedBox(width: 6),
+                    Text('Meet the team',
+                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

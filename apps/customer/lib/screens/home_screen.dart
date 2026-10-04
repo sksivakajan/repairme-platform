@@ -407,6 +407,19 @@ class _ImageBanner extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             Image.asset(asset, fit: BoxFit.cover, filterQuality: FilterQuality.medium),
+            // Same dark fade from the left as the team banner.
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withValues(alpha: 0.55),
+                    Colors.black.withValues(alpha: 0.25),
+                    Colors.black.withValues(alpha: 0),
+                  ],
+                  stops: const [0, 0.4, 0.75],
+                ),
+              ),
+            ),
             if (onTap != null) Material(color: Colors.transparent, child: InkWell(onTap: onTap)),
           ],
         ),
@@ -701,8 +714,16 @@ class _ServiceTile extends StatelessWidget {
                 Container(
                   width: 48,
                   height: 48,
-                  decoration: BoxDecoration(color: AppColors.yellowSoft, borderRadius: BorderRadius.circular(14)),
-                  child: Icon(categoryIcon(category.iconKey), color: AppColors.yellowDeep, size: 25),
+                  decoration: BoxDecoration(
+                    // A slightly deeper tint than yellowSoft so the icons are not too bright.
+                    color: AppColors.isDark ? AppColors.yellowSoft : const Color(0xFFFCE6AE),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    categoryIcon(category.iconKey),
+                    color: AppColors.isDark ? AppColors.yellowDeep : const Color(0xFFB87A00),
+                    size: 25,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 // Room for two lines on every tile keeps the icons aligned.

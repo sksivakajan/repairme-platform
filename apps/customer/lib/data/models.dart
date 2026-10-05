@@ -10,12 +10,6 @@ enum BookingType { emergency, scheduled, inspection }
 BookingType bookingTypeFrom(String value) => BookingType.values.byName(value.toLowerCase());
 String bookingTypeApi(BookingType type) => type.name.toUpperCase();
 
-String bookingTypeLabel(BookingType type) => switch (type) {
-      BookingType.emergency => 'Emergency',
-      BookingType.scheduled => 'Schedule',
-      BookingType.inspection => 'Inspection',
-    };
-
 class ProblemType {
   ProblemType.fromJson(Map<String, dynamic> json)
       : id = json['id'] as String,
@@ -55,23 +49,147 @@ class Catalog {
   final int onlineTechnicians;
 }
 
+class DocumentRef {
+  const DocumentRef(this.type, this.version);
+
+  DocumentRef.fromJson(Map<String, dynamic> json)
+      : type = json['type'] as String,
+        version = json['version'] as String;
+
+  final String type;
+  final String version;
+
+  Map<String, dynamic> toJson() => {'type': type, 'version': version};
+}
+
+class NotificationPrefs {
+  const NotificationPrefs({
+    this.bookingUpdates = true,
+    this.serviceReminders = true,
+    this.paymentUpdates = true,
+    this.offers = false,
+    this.repairmeUpdates = true,
+  });
+
+  NotificationPrefs.fromJson(Map<String, dynamic> json)
+      : bookingUpdates = json['bookingUpdates'] as bool,
+        serviceReminders = json['serviceReminders'] as bool,
+        paymentUpdates = json['paymentUpdates'] as bool,
+        offers = json['offers'] as bool,
+        repairmeUpdates = json['repairmeUpdates'] as bool;
+
+  final bool bookingUpdates;
+  final bool serviceReminders;
+  final bool paymentUpdates;
+  final bool offers;
+  final bool repairmeUpdates;
+
+  Map<String, dynamic> toJson() => {
+        'bookingUpdates': bookingUpdates,
+        'serviceReminders': serviceReminders,
+        'paymentUpdates': paymentUpdates,
+        'offers': offers,
+        'repairmeUpdates': repairmeUpdates,
+      };
+
+  NotificationPrefs copyWith({
+    bool? bookingUpdates,
+    bool? serviceReminders,
+    bool? paymentUpdates,
+    bool? offers,
+    bool? repairmeUpdates,
+  }) =>
+      NotificationPrefs(
+        bookingUpdates: bookingUpdates ?? this.bookingUpdates,
+        serviceReminders: serviceReminders ?? this.serviceReminders,
+        paymentUpdates: paymentUpdates ?? this.paymentUpdates,
+        offers: offers ?? this.offers,
+        repairmeUpdates: repairmeUpdates ?? this.repairmeUpdates,
+      );
+}
+
 class Profile {
   Profile.fromJson(Map<String, dynamic> json)
       : phoneNumber = json['phoneNumber'] as String?,
         fullName = json['fullName'] as String?,
+        _firstName = json['firstName'] as String?,
+        _lastName = json['lastName'] as String?,
+        email = json['email'] as String?,
+        birthday = _date(json['birthday']),
+        gender = json['gender'] as String?,
         language = json['language'] as String,
+        hasPhoto = json['hasPhoto'] as bool? ?? false,
+        photoVersion = json['photoVersion'] as String?,
+        profileComplete = json['profileComplete'] as bool? ?? true,
+        memberSince = _date(json['memberSince']),
+        membershipType = json['membershipType'] as String? ?? 'STANDARD',
+        notificationPreferences = json['notificationPreferences'] == null
+            ? const NotificationPrefs()
+            : NotificationPrefs.fromJson(json['notificationPreferences'] as Map<String, dynamic>),
+        pendingLegal = _list(json['pendingLegal'], DocumentRef.fromJson),
         bookingCount = json['bookingCount'] as int,
         addressCount = json['addressCount'] as int,
         unreadNotifications = json['unreadNotifications'] as int;
 
   final String? phoneNumber;
   final String? fullName;
+  final String? _firstName;
+  final String? _lastName;
+  final String? email;
+  final DateTime? birthday;
+
+  /// "MALE", "FEMALE" or "PREFER_NOT_TO_SAY".
+  final String? gender;
   final String language;
+  final bool hasPhoto;
+
+  /// Changes whenever the photo does, so the app knows when to fetch it again.
+  final String? photoVersion;
+  final bool profileComplete;
+  final DateTime? memberSince;
+  final String membershipType;
+  final NotificationPrefs notificationPreferences;
+
+  /// Legal documents (current version) the customer still has to accept.
+  final List<DocumentRef> pendingLegal;
   final int bookingCount;
   final int addressCount;
   final int unreadNotifications;
 
-  String get firstName => (fullName ?? '').trim().split(' ').first;
+  String get firstName => _firstName ?? (fullName ?? '').trim().split(' ').first;
+  String get lastName => _lastName ?? '';
+}
+
+class EmergencyContact {
+  EmergencyContact.fromJson(Map<String, dynamic> json)
+      : name = json['name'] as String,
+        relationship = json['relationship'] as String,
+        phoneNumber = json['phoneNumber'] as String;
+
+  final String name;
+  final String relationship;
+  final String phoneNumber;
+}
+
+class LegalDocument {
+  LegalDocument.fromJson(Map<String, dynamic> json)
+      : type = json['type'] as String,
+        title = json['title'] as String,
+        version = json['version'] as String,
+        lastUpdated = _date(json['lastUpdated']),
+        requiresAcceptance = json['requiresAcceptance'] as bool,
+        content = json['content'] as String? ?? '';
+
+  final String type;
+  final String title;
+  final String version;
+  final DateTime? lastUpdated;
+  final bool requiresAcceptance;
+
+  /// Empty in the list; the full text comes from the single-document call.
+  final String content;
+
+  DocumentRef get ref => DocumentRef(type, version);
 }
 
 class AddressInput {
@@ -81,6 +199,10 @@ class AddressInput {
     required this.city,
     this.houseNumber,
     this.landmark,
+    this.contactName,
+    this.contactPhone,
+    this.district,
+    this.instructions,
     this.latitude,
     this.longitude,
   });
@@ -90,6 +212,12 @@ class AddressInput {
   final String city;
   final String? houseNumber;
   final String? landmark;
+
+  /// Who to ask for on arrival, when it is not the customer.
+  final String? contactName;
+  final String? contactPhone;
+  final String? district;
+  final String? instructions;
   final double? latitude;
   final double? longitude;
 
@@ -99,6 +227,10 @@ class AddressInput {
         'city': city,
         if (houseNumber != null && houseNumber!.isNotEmpty) 'houseNumber': houseNumber,
         if (landmark != null && landmark!.isNotEmpty) 'landmark': landmark,
+        if (contactName != null && contactName!.isNotEmpty) 'contactName': contactName,
+        if (contactPhone != null && contactPhone!.isNotEmpty) 'contactPhone': contactPhone,
+        if (district != null && district!.isNotEmpty) 'district': district,
+        if (instructions != null && instructions!.isNotEmpty) 'instructions': instructions,
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
       };
@@ -121,6 +253,10 @@ class SavedAddress {
           city: json['city'] as String,
           houseNumber: json['houseNumber'] as String?,
           landmark: json['landmark'] as String?,
+          contactName: json['contactName'] as String?,
+          contactPhone: json['contactPhone'] as String?,
+          district: json['district'] as String?,
+          instructions: json['instructions'] as String?,
           latitude: _num(json['latitude']),
           longitude: _num(json['longitude']),
         );
@@ -130,7 +266,6 @@ class SavedAddress {
   final bool isDefault;
   final AddressInput address;
 
-  String get labelText => label[0] + label.substring(1).toLowerCase();
 }
 
 class Technician {
@@ -369,19 +504,6 @@ class TopTechnician {
   final double rating;
   final int ratingCount;
   final int jobsCompleted;
-
-  /// The trade as a job title: "Electrician", "Plumber"…
-  String get trade => switch (categorySlug) {
-        'electrical' || 'fans-lights' => 'Electrician',
-        'plumbing' => 'Plumber',
-        'ac' => 'AC technician',
-        'refrigerators' || 'washing-machines' => 'Appliance repair',
-        'mechanic' => 'Mechanic',
-        'doors-locks' => 'Locksmith',
-        'carpentry' => 'Carpenter',
-        'general' => 'Handyman',
-        _ => categoryName ?? 'Technician',
-      };
 }
 
 class ConversationMessage {

@@ -1,0 +1,1101 @@
+{
+  "@@locale": "en",
+  "somethingWentWrong": "Something went wrong.",
+  "tryAgain": "Try again",
+  "stepOf": "Step {step} of 4 · {label}",
+  "@stepOf": {
+    "placeholders": {
+      "step": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "save": "Save",
+  "send": "Send",
+  "edit": "Edit",
+  "currencyPrefix": "Rs.",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "tomorrow": "Tomorrow",
+  "visitFee": "Visit fee",
+  "labour": "Labour",
+  "parts": "Parts",
+  "total": "Total",
+  "statusFinding": "FINDING",
+  "statusAssigning": "ASSIGNING",
+  "statusAssigned": "ASSIGNED",
+  "statusScheduled": "SCHEDULED",
+  "statusOnTheWay": "ON THE WAY",
+  "statusWorking": "WORKING",
+  "statusPaymentDue": "PAYMENT DUE",
+  "statusCompleted": "COMPLETED",
+  "statusCancelled": "CANCELLED",
+  "navHome": "Home",
+  "navBookings": "Bookings",
+  "navMessages": "Messages",
+  "navProfile": "Profile",
+  "chooseService": "Choose a service",
+  "searchService": "Search for a service...",
+  "noMatchingService": "No matching service",
+  "tabActive": "Active",
+  "tabCompleted": "Completed",
+  "tabCancelled": "Cancelled",
+  "noActiveBookings": "No active bookings",
+  "noCompletedJobs": "No completed jobs yet",
+  "noCancelledBookings": "No cancelled bookings",
+  "needAnotherRepair": "Need another repair?",
+  "bookTechnicianHint": "Book a verified technician in about 2 minutes.",
+  "cancelledByYou": "Cancelled by you",
+  "notifications": "Notifications",
+  "readAll": "Read all",
+  "nothingHereYet": "Nothing here yet",
+  "groupToday": "TODAY",
+  "groupEarlier": "EARLIER",
+  "support": "Support",
+  "callRepairMe": "Call RepairMe",
+  "open24Hours": "Open 24 hours",
+  "callNumber": "Call {phone}",
+  "@callNumber": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "writeToUs": "Write to us",
+  "repliesInMinutes": "Replies in minutes",
+  "yourTickets": "Your tickets",
+  "ticketResolved": "RESOLVED",
+  "ticketOpen": "OPEN",
+  "commonQuestions": "Common questions",
+  "faqReportQ": "Report a problem with a booking",
+  "faqReportA": "Open the booking and use \"Report a problem\", or create a ticket below. Our team replies within minutes during the day.",
+  "faqPriceQ": "How is the price calculated?",
+  "faqPriceA": "Every visit has a Rs. 500 visit fee. Labour and parts are quoted by the technician on site, and nothing is charged until you approve the cost in the app.",
+  "faqVerifiedQ": "How are technicians verified?",
+  "faqVerifiedA": "Every RepairMe technician is ID-checked and their trade documents are reviewed by our team before they can accept jobs.",
+  "faqRefundsQ": "Refunds and cancellations",
+  "faqRefundsA": "Cancelling before a technician arrives is free. Every completed job has a 7-day workmanship cover: if the same fault returns, we send someone back at no labour cost.",
+  "writeToRepairMe": "Write to RepairMe",
+  "subject": "Subject",
+  "ticketMessageHint": "Tell us what happened (at least 10 characters)",
+  "ticketThanks": "Thanks — our team will get back to you shortly",
+  "addYourName": "Add your name",
+  "phoneVerified": "Phone verified",
+  "addresses": "Addresses",
+  "savedAddresses": "Saved addresses",
+  "paymentMethods": "Payment methods",
+  "cash": "Cash",
+  "helpAndSupport": "Help & support",
+  "language": "Language",
+  "termsAndPrivacy": "Terms and privacy",
+  "logOut": "Log out",
+  "yourName": "Your name",
+  "fullName": "Full name",
+  "noSavedAddresses": "No saved addresses",
+  "noSavedAddressesHint": "Addresses you use for bookings are saved here.",
+  "addressDefault": "{label} · Default",
+  "@addressDefault": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "appearance": "Appearance",
+  "appearanceLight": "Light",
+  "appearanceDark": "Dark",
+  "appearanceSystem": "System",
+  "greetMorning": "Good morning",
+  "greetAfternoon": "Good afternoon",
+  "greetEvening": "Good evening",
+  "welcome": "Welcome",
+  "addYourAddress": "Add your address",
+  "services": "Services",
+  "seeAll": "See all",
+  "viewAll": "View all",
+  "topRatedTechnicians": "Top rated technicians",
+  "notificationsUnread": "Notifications, {n} unread",
+  "@notificationsUnread": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "technicianRated": "{name}, {trade}, rated {rating}",
+  "@technicianRated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "trade": {
+        "type": "String"
+      },
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "bookNow": "Book now",
+  "getHelpNow": "Get help now",
+  "useCode": "Use code {code}",
+  "@useCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "offerNewTag": "NEW CUSTOMER OFFER",
+  "offerNewTitle": "20% OFF",
+  "offerNewSub": "Your first booking",
+  "offerHomeTag": "HOME REPAIRS",
+  "offerHomeTitle": "Free inspection",
+  "offerHomeSub": "On any home repair this month",
+  "bookTechnician": "Book a technician",
+  "offerRoadTag": "ROADSIDE ASSIST",
+  "offerRoadTitle": "Rs. 500 OFF",
+  "offerRoadSub": "Breakdown & towing, 24/7",
+  "teamLine1": "Built in Sri Lanka,",
+  "teamLine2": "for every Sri Lankan",
+  "meetTheTeam": "Meet the team",
+  "emergencyTag": "EMERGENCY",
+  "needHelpNow": "Need help right now?",
+  "techniciansOnline": "{n, plural, =1{1 technician online} other{{n} technicians online}} · avg. 18 min",
+  "@techniciansOnline": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "verifiedTechniciansAllDay": "Verified technicians, 24 hours a day",
+  "brandTagline": "Verified expertise. Trusted integrity.",
+  "chipVerified": "Verified",
+  "chipFast": "Fast",
+  "chipTrusted": "Trusted",
+  "topTechInfo": "When you book, we match you with the nearest available verified technician.",
+  "noRatingsYet": "No ratings yet",
+  "tradeAndJobs": "{trade} · {n, plural, =1{1 job} other{{n} jobs}}",
+  "@tradeAndJobs": {
+    "placeholders": {
+      "trade": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tradeElectrician": "Electrician",
+  "tradePlumber": "Plumber",
+  "tradeAc": "AC technician",
+  "tradeAppliance": "Appliance repair",
+  "tradeMechanic": "Mechanic",
+  "tradeLocksmith": "Locksmith",
+  "tradeCarpenter": "Carpenter",
+  "tradeHandyman": "Handyman",
+  "tradeTechnician": "Technician",
+  "categoryElectricalName": "Electrical",
+  "categoryElectricalDescription": "Wiring, sockets, breakers",
+  "categoryPlumbingName": "Plumbing",
+  "categoryPlumbingDescription": "Taps, pipes, leaks",
+  "categoryAcName": "AC",
+  "categoryAcDescription": "Service, gas, repairs",
+  "categoryRefrigeratorsName": "Refrigerators",
+  "categoryRefrigeratorsDescription": "Not cooling, leaks",
+  "categoryWashingMachinesName": "Washing machines",
+  "categoryWashingMachinesDescription": "Drain, noise, no power",
+  "categoryMechanicName": "Mechanic",
+  "categoryMechanicDescription": "Bikes and vehicles",
+  "categoryFansLightsName": "Fans and lights",
+  "categoryFansLightsDescription": "Install and repair",
+  "categoryDoorsLocksName": "Doors and locks",
+  "categoryDoorsLocksDescription": "Locks, handles, hinges",
+  "categoryGeneralName": "General",
+  "categoryGeneralDescription": "Small jobs around the home",
+  "problemBreakerKeepsTripping": "Breaker keeps tripping",
+  "problemSocketNotWorking": "Socket not working",
+  "problemLightOrFanFault": "Light or fan fault",
+  "problemPowerOutage": "Power outage",
+  "problemNewWiringOrPoints": "New wiring or points",
+  "problemLeakingTap": "Leaking tap",
+  "problemBurstOrLeakingPipe": "Burst or leaking pipe",
+  "problemBlockedDrain": "Blocked drain",
+  "problemToiletOrCisternFault": "Toilet or cistern fault",
+  "problemWaterPumpProblem": "Water pump problem",
+  "problemNotCooling": "Not cooling",
+  "problemWaterLeaking": "Water leaking",
+  "problemStrangeNoise": "Strange noise",
+  "problemRegularService": "Regular service",
+  "problemGasRefill": "Gas refill",
+  "problemNotTurningOn": "Not turning on",
+  "problemNotDraining": "Not draining",
+  "problemNotSpinning": "Not spinning",
+  "problemNoPower": "No power",
+  "problemWillNotStart": "Will not start",
+  "problemBatteryProblem": "Battery problem",
+  "problemFlatTyre": "Flat tyre",
+  "problemBreakdownOnTheRoad": "Breakdown on the road",
+  "problemInstallAFan": "Install a fan",
+  "problemFanNotWorking": "Fan not working",
+  "problemInstallLights": "Install lights",
+  "problemLightNotWorking": "Light not working",
+  "problemLockedOut": "Locked out",
+  "problemBrokenLock": "Broken lock",
+  "problemDoorNotClosing": "Door not closing",
+  "problemReplaceHandleOrHinge": "Replace handle or hinge",
+  "problemFurnitureAssembly": "Furniture assembly",
+  "problemWallMounting": "Wall mounting",
+  "problemSmallRepairs": "Small repairs",
+  "problemSomethingElse": "Something else",
+  "symptomBurningSmell": "Burning smell",
+  "symptomSparksSeen": "Sparks seen",
+  "symptomOnlyOneRoom": "Only one room",
+  "symptomHappenedBefore": "Happened before",
+  "symptomWaterLeakingNow": "Water leaking now",
+  "symptomLowPressure": "Low pressure",
+  "symptomBadSmell": "Bad smell",
+  "symptomWaterDripping": "Water dripping",
+  "symptomWaterOnFloor": "Water on floor",
+  "symptomIceBuildUp": "Ice build-up",
+  "symptomNoisy": "Noisy",
+  "symptomErrorCodeShown": "Error code shown",
+  "symptomVehicleAtHome": "Vehicle at home",
+  "symptomVehicleOnTheRoad": "Vehicle on the road",
+  "symptomWarningLightOn": "Warning light on",
+  "symptomUrgent": "Urgent",
+  "symptomNeedParts": "Need parts",
+  "onboard1Title": "Help in minutes, not days",
+  "onboard1Body": "Pipe burst or power gone? Press Emergency and the nearest verified technician is on the way.",
+  "onboard2Title": "Book a time that suits you",
+  "onboard2Body": "Choose a day and an arrival window for repairs, servicing, or an inspection and quote first.",
+  "onboard3Title": "Verified. And you stay in control",
+  "onboard3Body": "Every technician is ID-checked. You approve the cost before any work is charged.",
+  "skip": "Skip",
+  "getStarted": "Get started",
+  "next": "Next",
+  "back": "Back",
+  "welcomeToRepairMe": "Welcome to RepairMe",
+  "homeRepairsSimple": "Home repairs, made simple",
+  "enterMobile": "Enter your mobile number",
+  "oneTimeCodeNote": "We'll send you a one-time code",
+  "sendCode": "Send code",
+  "agreePrefix": "By continuing you agree to our ",
+  "termsPrivacy": "Terms & Privacy",
+  "agreeSuffix": "",
+  "enterVerificationCode": "Enter verification code",
+  "sentTo": "Sent to {phone}",
+  "@sentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "verify": "Verify",
+  "resendIn": "Resend code in {time}",
+  "@resendIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "resendCode": "Resend code",
+  "newCodeSent": "A new code is on its way",
+  "authIncorrectCodeDev": "Incorrect code. In development use {code}.",
+  "@authIncorrectCodeDev": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "authRequestNewCode": "Please request a new code.",
+  "authIncorrectCode": "Incorrect code. Please check the SMS and try again.",
+  "authInvalidPhone": "That mobile number is not valid.",
+  "authTooMany": "Too many attempts. Please wait and try again.",
+  "authExpired": "The code expired. Please request a new one.",
+  "authFailed": "Sign-in failed. Please try again.",
+  "noMessagesYet": "No messages yet",
+  "noMessagesHint": "When a technician accepts your booking, you can chat with them here.",
+  "sayHelloTo": "Say hello to {name}",
+  "@sayHelloTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "youPrefix": "You: {message}",
+  "@youPrefix": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "splashTagline": "FIXED. FAST. VERIFIED.",
+  "splashProud": "Proudly Sri Lankan",
+  "bookingTypeEmergency": "Emergency",
+  "bookingTypeSchedule": "Schedule",
+  "bookingTypeInspection": "Inspection",
+  "addressHome": "Home",
+  "addressOffice": "Work",
+  "addressOther": "Other",
+  "continueLabel": "Continue",
+  "requestDetails": "Request details",
+  "howSoon": "How soon do you need help?",
+  "typeEmergencyBody": "The nearest available technician comes as soon as possible.",
+  "typeEmergencyHint": "Avg. arrival 18 min",
+  "typeScheduledBody": "Choose a date and a time window that suits you.",
+  "typeScheduledHint": "Pick a slot",
+  "typeInspectionBody": "A visit to inspect, measure and give you a quote first.",
+  "typeInspectionHint": "Quote before work",
+  "howPricingWorks": "How pricing works",
+  "pricingBody": "Visit fee {fee} + labour + parts. The technician sends the final cost and you approve it before any work is charged.",
+  "@pricingBody": {
+    "placeholders": {
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "continueWith": "Continue with {type}",
+  "@continueWith": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "stepProblem": "Problem",
+  "whatIsProblem": "What is the problem?",
+  "tellUsMore": "Tell us more",
+  "detailsHint": "What happened, when it started, anything the technician should know (at least 10 characters)",
+  "stepPhotos": "Photos",
+  "addPhotos": "Add photos",
+  "photosSubtitle": "Optional, but it helps the technician bring the right tools and parts.",
+  "add": "Add",
+  "takePhoto": "Take photo",
+  "fromGallery": "From gallery",
+  "photoTips": "Tips for good photos",
+  "photoTipsBody": "· Show the whole area, then a close-up\n· Include any model or label plate\n· Do not touch exposed wires",
+  "skipForNow": "Skip for now",
+  "photoOpenError": "Could not open photos. Please check permissions.",
+  "stepLocation": "Location",
+  "whereShouldComeTitle": "Where should the technician come?",
+  "yourArea": "Your area",
+  "addNew": "Add new",
+  "streetAddress": "Street address",
+  "areaLabel": "Area",
+  "cityLabel": "City",
+  "houseNumber": "House / apartment number",
+  "landmarkLabel": "Landmark or directions",
+  "saveThisAddress": "Save this address",
+  "confirmLocation": "Confirm location",
+  "inspectionVisit": "Inspection visit",
+  "scheduleVisit": "Schedule a visit",
+  "whenShouldWeCome": "When should we come?",
+  "arrivalWindow": "Arrival window",
+  "visitConfirmNote": "The technician will confirm the visit the day before. You can reschedule free until 2 hours before.",
+  "selectedSlot": "Selected: {when}",
+  "@selectedSlot": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewRequest": "Review request",
+  "stepReview": "Review",
+  "checkYourRequest": "Check your request",
+  "photosAttached": "{n, plural, =1{1 photo attached} other{{n} photos attached}}",
+  "@photosAttached": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "estimatedCost": "Estimated cost",
+  "labourAndParts": "Labour and parts",
+  "quotedOnSite": "Quoted on site",
+  "approveFinalCost": "You will approve the final cost in the app before any work is charged.",
+  "payWithCash": "Pay with Cash",
+  "afterTheJob": "After the job",
+  "requestTechnician": "Request technician",
+  "photosFailed": "{n, plural, =1{1 photo could not be uploaded} other{{n} photos could not be uploaded}}",
+  "@photosFailed": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "theTechnician": "the technician",
+  "yourTechnician": "your technician",
+  "otherLabel": "Other",
+  "bkFinding": "Finding a technician",
+  "bkTeamAssigning": "Team is assigning",
+  "bkAssigned": "Technician assigned",
+  "bkCancelledRequest": "Cancelled request",
+  "bkJobStatus": "Job status",
+  "stepRequestReceived": "Request received",
+  "stepNoTechAccepted": "No technician accepted",
+  "stepTeamAssigning": "RepairMe team assigning",
+  "stepTechConfirms": "Technician confirms",
+  "stepMatchingNearby": "Matching technicians nearby",
+  "requestRef": "Request #{ref}",
+  "@requestRef": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "operatorFindingTitle": "Our team is finding someone for you",
+  "findingVerifiedTitle": "Finding a verified {category} technician",
+  "@findingVerifiedTitle": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "operatorFindingBody": "No technician accepted yet, so a RepairMe operator is assigning one for you. Usually under 2 minutes.",
+  "matchingNear": "Matching you with technicians near {area}.",
+  "@matchingNear": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmingFor": "We are confirming a technician for {when}.",
+  "@confirmingFor": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "ifNobodyAccepts": "If nobody accepts, the RepairMe team assigns a technician for you.",
+  "cancelRequest": "Cancel request",
+  "cancelThisRequest": "Cancel this request?",
+  "noChargeNoTech": "No charge, since no technician has been assigned yet.",
+  "noChargeNotArrived": "No charge, since {name} has not arrived yet.",
+  "@noChargeNotArrived": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonFoundSomeone": "Found someone else",
+  "reasonProblemFixed": "Problem is fixed",
+  "reasonWaitingTooLong": "Waiting too long",
+  "tellUsMoreOptional": "Tell us more (optional)",
+  "keepWaiting": "Keep waiting",
+  "etaMin": "ETA {n} MIN",
+  "@etaMin": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "techOnTheWayTitle": "{name} is on the way",
+  "@techOnTheWayTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "techWillVisit": "{name} will visit {when}",
+  "@techWillVisit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "techAccepted": "{name} accepted your request",
+  "@techAccepted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "arrivesInAbout": "Arrives in about {n} min",
+  "@arrivesInAbout": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "viewJobStatus": "View job status",
+  "cancelBooking": "Cancel booking",
+  "verifiedCategoryTech": "Verified {category} technician",
+  "@verifiedCategoryTech": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "newTech": "New",
+  "ratingAndJobs": "{rating} · {n, plural, =1{1 job} other{{n} jobs}}",
+  "@ratingAndJobs": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "jobCodeShare": "Job code · share only when {name} arrives",
+  "@jobCodeShare": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messageTech": "Message {name}",
+  "@messageTech": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "jobNumber": "Job #{ref}",
+  "@jobNumber": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "costReadyTitle": "Cost ready for your approval",
+  "costReadyBody": "{name} sent {amount} · Tap to review",
+  "@costReadyBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "repairCompleted": "Repair completed",
+  "payTo": "Pay {amount} to {name}",
+  "@payTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentReceived": "Payment received",
+  "viewReceiptRate": "View receipt and rate {name}",
+  "@viewReceiptRate": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "viewReceipt": "View receipt",
+  "bookingWasCancelled": "This booking was cancelled",
+  "cancelledByYouNoCharge": "Cancelled by you · no charge",
+  "cancelledByRepairMe": "Cancelled by RepairMe",
+  "tlRequestCreated": "Request created",
+  "tlAccepted": "Technician accepted",
+  "tlOnTheWay": "On the way",
+  "tlArrived": "Arrived",
+  "tlJobCodeVerified": "Job code verified · {time}",
+  "@tlJobCodeVerified": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tlWorking": "Working",
+  "tlCostApproved": "Cost approved, work under way",
+  "tlInspectionDone": "Inspection done, cost sent",
+  "tlCompleted": "Completed",
+  "tlPayAndRate": "Pay and rate",
+  "yourPhotos": "Your photos",
+  "beforePhotosBy": "Before photos by {name}",
+  "@beforePhotosBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "afterPhotos": "After photos",
+  "requestHeading": "Request",
+  "reportProblemWithJob": "Report a problem with this job",
+  "problemWithRef": "Problem with {ref}",
+  "@problemWithRef": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "chat": "Chat",
+  "onTheWayEta": "On the way · ETA {n} min",
+  "@onTheWayEta": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSafety": "Messages are recorded for your safety. Never share your job code until {name} arrives.",
+  "@chatSafety": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "timeSeen": "{time} · Seen",
+  "@timeSeen": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "quickAtHome": "I am at home",
+  "quickCallMe": "Call me",
+  "quickSideGate": "Use the side gate",
+  "messageHint": "Message",
+  "chatClosed": "Chat is closed for this booking.",
+  "declineCostQ": "Decline this cost?",
+  "declineCostBody": "The technician will be told. Only the visit fee applies if no work is done.",
+  "decline": "Decline",
+  "costApprovedToast": "Cost approved. Work continues.",
+  "costDeclinedToast": "Cost declined",
+  "approveCostTitle": "Approve cost",
+  "nothingToApprove": "Nothing to approve right now",
+  "totalToApprove": "Total to approve",
+  "noteFrom": "Note from {name}",
+  "@noteFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "workStartsAfterApprove": "Work starts only after you approve. If the cost changes, you will be asked again.",
+  "approveAmount": "Approve {amount}",
+  "@approveAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "askQuestion": "Ask a question",
+  "payment": "Payment",
+  "repairCompletedBy": "Repair completed by {name}",
+  "@repairCompletedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "repairCompletedByAt": "Repair completed by {name} · {time}",
+  "@repairCompletedByAt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentMethodHeading": "Payment method",
+  "payTechDirectly": "Pay {name} directly",
+  "@payTechDirectly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "card": "Card",
+  "comingSoon": "Coming soon",
+  "mobileWallet": "Mobile wallet",
+  "handCashTo": "Hand {amount} to {name}. Your receipt appears as soon as they confirm.",
+  "@handCashTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmPaymentAmount": "Confirm payment · {amount}",
+  "@confirmPaymentAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "receipt": "Receipt",
+  "paidInCash": "{amount} paid in cash",
+  "@paidInCash": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "paidIn": "{amount} paid in {method}",
+  "@paidIn": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptNumber": "Receipt #{ref}",
+  "@receiptNumber": {
+    "placeholders": {
+      "ref": {
+        "type": "String"
+      }
+    }
+  },
+  "totalPaid": "Total paid",
+  "warrantyTitle": "7-day workmanship cover",
+  "warrantyBody": "If the same fault returns, we send someone back at no labour cost.",
+  "youRated": "You rated {name} {rating}★ · Done",
+  "@youRated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "rateName": "Rate {name}",
+  "@rateName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rateExperience": "Rate your experience",
+  "tagOnTime": "On time",
+  "tagProfessional": "Professional",
+  "tagCleanWork": "Clean work",
+  "tagFairPrice": "Fair price",
+  "tagExplainedClearly": "Explained clearly",
+  "ratePoor": "Poor",
+  "rateCouldBeBetter": "Could be better",
+  "rateGood": "Good",
+  "rateGreat": "Great",
+  "rateExcellent": "Excellent",
+  "howWasName": "How was {name}?",
+  "@howWasName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "whatWentWell": "What went well?",
+  "addCommentOptional": "Add a comment (optional)",
+  "commentHint": "Tell others about the job",
+  "submitRating": "Submit rating",
+  "thankYouRating": "Thank you for your rating!",
+  "enterMobileToContinue": "Enter your mobile number to continue",
+  "legalPrefix": "By continuing, you agree to RepairMe's ",
+  "termsAndConditions": "Terms & Conditions",
+  "legalMiddle": " and acknowledge the ",
+  "privacyPolicy": "Privacy Policy",
+  "privacyPolicyLink": "Privacy Policy",
+  "legalSuffix": ".",
+  "verifyYourNumber": "Verify Your Number",
+  "sentCodeTo": "We've sent a verification code to",
+  "changeNumber": "Change Number",
+  "didntReceive": "Didn't receive the code?",
+  "completeYourProfile": "Complete Your Profile",
+  "completeProfileSub": "Tell us a little about yourself to finish creating your account.",
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "emailOptional": "Email Address (optional)",
+  "emailLabel": "Email Address",
+  "mobileNumber": "Mobile Number",
+  "verifiedBadge": "Verified",
+  "createAccount": "Create Account",
+  "firstNameRequired": "Enter your first name",
+  "lastNameRequired": "Enter your last name",
+  "emailInvalid": "Enter a valid email address",
+  "phoneInvalid": "Enter a valid Sri Lankan mobile number",
+  "createAccountError": "We couldn't create your account. Please try again.",
+  "profileUpdateError": "We couldn't update your profile. Please try again.",
+  "offlineTitle": "Can't reach RepairMe",
+  "offlineBody": "Check your internet connection and try again.",
+  "networkError": "Cannot reach RepairMe. Check your connection and try again.",
+  "signInAgain": "Please sign in again.",
+  "authPhoneInUse": "This mobile number is already associated with another account.",
+  "viewEditProfile": "View / Edit Profile",
+  "sectionAccount": "ACCOUNT",
+  "sectionSupport": "SUPPORT",
+  "sectionAbout": "ABOUT",
+  "membership": "Membership",
+  "aboutRepairMe": "About RepairMe",
+  "legalAndPrivacy": "Legal & Privacy",
+  "followUs": "Follow Us",
+  "madeInSriLanka": "Made in Sri Lanka",
+  "appVersion": "Version {version}",
+  "@appVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "linkNotAvailable": "This link isn't available yet",
+  "logOutQ": "Log out?",
+  "logOutConfirm": "Are you sure you want to log out of RepairMe?",
+  "logOutAction": "Log Out",
+  "personalInformation": "Personal Information",
+  "changeProfilePhoto": "Change Profile Photo",
+  "removePhoto": "Remove photo",
+  "personalDetails": "Personal Details",
+  "birthday": "Birthday",
+  "birthdayHint": "DD / MM / YYYY",
+  "gender": "Gender",
+  "genderMale": "Male",
+  "genderFemale": "Female",
+  "genderPrefer": "Prefer not to say",
+  "selectGender": "Select gender",
+  "saveChanges": "Save Changes",
+  "changesSaved": "Changes saved",
+  "chooseLanguage": "Choose language",
+  "emergencyContact": "Emergency Contact",
+  "emergencyContactHint": "Someone we can reach in an emergency. Used only for that purpose.",
+  "contactName": "Contact Name",
+  "relationship": "Relationship",
+  "relationshipFamily": "Family",
+  "relationshipFriend": "Friend",
+  "relationshipNeighbour": "Neighbour",
+  "addEmergencyContact": "Add Emergency Contact",
+  "remove": "Remove",
+  "removeContactQ": "Remove emergency contact?",
+  "removeContactBody": "This contact will be deleted from your account.",
+  "contactSaved": "Emergency contact saved",
+  "additionalSettings": "Additional Settings",
+  "changeMobileNumber": "Change Mobile Number",
+  "notificationPreferences": "Notification Preferences",
+  "dangerZone": "Danger Zone",
+  "deleteAccount": "Delete Account",
+  "enterNewNumber": "Enter your new mobile number",
+  "changeNumberNote": "We'll send a code to the new number to verify it. Your account and bookings stay the same.",
+  "sameNumber": "That is already your number",
+  "numberChanged": "Mobile number updated",
+  "verifyNewNumber": "Verify New Number",
+  "notifBooking": "Booking Updates",
+  "notifBookingSub": "Technician acceptance, arrival and booking-status updates.",
+  "notifReminders": "Service Reminders",
+  "notifRemindersSub": "Upcoming scheduled services.",
+  "notifPayments": "Payment Updates",
+  "notifPaymentsSub": "Receipts, payment status and refunds.",
+  "notifOffers": "Offers & Promotions",
+  "notifOffersSub": "Marketing messages and promotions.",
+  "notifUpdates": "RepairMe Updates",
+  "notifUpdatesSub": "Important product and service updates.",
+  "notifEssentialNote": "Essential account, security and booking-safety messages are always sent.",
+  "deleteTitle": "Delete Your RepairMe Account?",
+  "deleteIntro": "We're sorry to see you go. Deleting your account may permanently remove your RepairMe profile and associated personal information, subject to information we are required or permitted to retain.",
+  "whyLeaving": "Why are you leaving?",
+  "delReasonNoNeed": "I no longer need RepairMe",
+  "delReasonPrivacy": "I have privacy concerns",
+  "delReasonBadExperience": "I had a bad experience",
+  "delReasonAnotherAccount": "I created another account",
+  "delReasonNotifications": "I receive too many notifications",
+  "delReasonServices": "I couldn't find the services I needed",
+  "tellUsMoreLabel": "Tell us more",
+  "continueToDelete": "Continue to Delete",
+  "permanentWarningTitle": "This action may be permanent",
+  "deleteWillRemove": "These may be removed or anonymised:",
+  "delRemoveProfile": "Your profile and contact details",
+  "delRemoveAddresses": "Saved addresses and emergency contact",
+  "delRemovePrefs": "Preferences and notifications",
+  "delKeepNote": "Some records, such as payments and support history, may be kept where required for accounting, security or legal reasons.",
+  "delConfirmCheck": "I understand and want to delete my account",
+  "verifyAndDelete": "Verify & Delete Account",
+  "deleteOtpTitle": "Confirm with a code",
+  "deleteOtpBody": "For your security, enter the code we sent to {phone}.",
+  "@deleteOtpBody": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountAction": "Delete my account",
+  "deleteError": "We couldn't delete your account. Please try again.",
+  "accountDeleted": "Your account has been deleted",
+  "membershipTitle": "RepairMe Membership",
+  "currentPlan": "Current Plan",
+  "standardMember": "Standard Member",
+  "memberSince": "Member Since",
+  "yourBenefits": "Your benefits",
+  "benefit1": "Access to verified technicians",
+  "benefit2": "Emergency service requests",
+  "benefit3": "Scheduled bookings",
+  "benefit4": "Measurement requests",
+  "benefit5": "Booking history",
+  "benefit6": "Saved addresses",
+  "membershipSoon": "More membership benefits are coming soon.",
+  "addNewAddress": "+ Add New Address",
+  "addAddress": "Add Address",
+  "editAddress": "Edit Address",
+  "saveAddress": "Save Address",
+  "setAsDefault": "Set as Default",
+  "defaultBadge": "DEFAULT",
+  "deleteAddressQ": "Delete this address?",
+  "deleteAddressBody": "Your past bookings are not affected.",
+  "delete": "Delete",
+  "noSavedAddressesYet": "No saved addresses yet",
+  "saveAddressHint": "Save your home or work address to make future bookings faster.",
+  "addressLabelField": "Label",
+  "recipientName": "Contact name (optional)",
+  "contactPhoneField": "Contact mobile number (optional)",
+  "districtField": "District",
+  "instructionsField": "Additional instructions (optional)",
+  "addressSaveError": "We couldn't save this address. Please try again.",
+  "addressSaved": "Address saved",
+  "fieldRequired": "This field is required",
+  "cashDesc": "Pay your technician directly after the job.",
+  "cardOnline": "Card / Online Payment",
+  "cardOnlineDesc": "Coming soon. Payments will be handled securely by a payment provider.",
+  "addPaymentMethod": "+ Add Payment Method",
+  "paymentSoonTitle": "Online payments are coming soon",
+  "paymentSoonBody": "For now you can pay with cash after the job. We will let you know when cards and other online payments are available.",
+  "okLabel": "OK",
+  "helpCenterFaqs": "Help Center / FAQs",
+  "mySupportRequests": "My Support Requests",
+  "contactSupport": "Contact Support",
+  "reportProblem": "Report a Problem",
+  "paymentIssue": "Payment Issue",
+  "bookingIssue": "Booking Issue",
+  "emergencyHelp": "Emergency Help",
+  "emergencyHelpBody": "In an emergency, request a technician right away.",
+  "requestEmergencyTechnician": "Request emergency technician",
+  "issueHint": "Tell us what happened and, if it is about a booking or payment, the booking number.",
+  "noSupportRequests": "No support requests yet",
+  "noSupportHint": "When you contact support, your requests will appear here.",
+  "callUs": "Call Us",
+  "emailUs": "Email Us",
+  "chatWithUs": "Chat With Us",
+  "supportNotConfigured": "Support contact details will be available soon. You can still write to us from My Support Requests.",
+  "couldNotOpen": "We couldn't open that",
+  "faqSearchHint": "Search help",
+  "faqNoResults": "No answers found",
+  "faqCatAccount": "Account",
+  "faqCatBooking": "Booking",
+  "faqCatPayments": "Payments",
+  "faqCatTechnicians": "Technicians",
+  "faqPhoneQ": "How do I change my mobile number?",
+  "faqPhoneA": "Go to Profile → Personal Information → Change Mobile Number. We send a code to the new number to verify it.",
+  "faqProfileQ": "How do I update my profile?",
+  "faqProfileA": "Open Profile and tap your name at the top, then change your details and tap Save Changes.",
+  "faqDeleteQ": "How do I delete my account?",
+  "faqDeleteA": "Go to Profile → Personal Information → Delete Account and follow the steps. You will confirm with a code sent to your mobile number.",
+  "faqBookQ": "How do I book a technician?",
+  "faqBookA": "Choose a service on the Home screen, describe the problem, pick a location and confirm. We match you with a verified technician.",
+  "faqEmergencyQ": "How do emergency bookings work?",
+  "faqEmergencyA": "Emergency requests go to the nearest available technician right away. Pick Emergency when you book.",
+  "faqScheduledQ": "How do scheduled bookings work?",
+  "faqScheduledA": "Choose a day and an arrival window. The technician confirms the visit the day before, and you can reschedule free until 2 hours before.",
+  "faqMeasureQ": "What is a measurement request?",
+  "faqMeasureA": "A visit where the technician inspects, measures and gives you a quote before any work starts.",
+  "faqMethodsQ": "What payment methods are supported?",
+  "faqMethodsA": "You can pay with cash after the job. Card and online payments are coming soon.",
+  "faqRefundQ": "How do refunds work?",
+  "faqRefundA": "If you were charged by mistake, open Help & Support → Payment Issue and tell us the booking. We review every request.",
+  "faqReceiptQ": "Where can I find my receipt?",
+  "faqReceiptA": "Open Bookings → Completed, choose the job and tap View receipt.",
+  "faqRateQ": "How can I rate a technician?",
+  "faqRateA": "After a job is paid, open the receipt and tap Rate. Your feedback helps other customers.",
+  "aboutTagline": "Help When You Need It.",
+  "aboutDescription": "RepairMe is an on-demand repair service platform designed to connect customers with trusted and verified technicians for convenient repair and maintenance services.",
+  "aboutSvc1": "Electrical",
+  "aboutSvc2": "Plumbing",
+  "aboutSvc3": "AC & Refrigeration",
+  "aboutSvc4": "Appliance Repair",
+  "aboutSvc5": "Mechanical Services",
+  "aboutSvc6": "Motorcycle / Roadside Repair",
+  "aboutSvc7": "Home Maintenance",
+  "aboutSvc8": "Other supported repair services",
+  "contactUs": "Contact Us",
+  "officialEmail": "Official Email",
+  "phoneLabel": "Phone",
+  "websiteLabel": "Website",
+  "officeAddress": "Office Address",
+  "contactSoon": "Contact details will be added soon.",
+  "cancellationPolicy": "Cancellation Policy",
+  "refundPolicy": "Refund Policy",
+  "paymentPolicy": "Payment Policy",
+  "dataDeletionPolicy": "Account & Data Deletion",
+  "lastUpdatedOn": "Last Updated: {date}",
+  "@lastUpdatedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "legalDraftNote": "Sample text for the prototype. Final policies must be reviewed before launch.",
+  "legalEnglishNote": "Legal documents are currently available in English only.",
+  "deleteActiveBookings": "Finish or cancel your active bookings before deleting your account.",
+  "acceptTermsTitle": "Before you continue",
+  "acceptTermsBody": "To use RepairMe, please read and accept our Terms & Conditions and Privacy Policy.",
+  "acceptPrefix": "I have read and accept the ",
+  "acceptMiddle": " and ",
+  "acceptSuffix": ".",
+  "acceptContinue": "Accept & Continue",
+  "acceptError": "We couldn't save your acceptance. Please try again."
+}

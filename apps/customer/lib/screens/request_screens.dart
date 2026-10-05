@@ -6,6 +6,9 @@ import 'package:intl/intl.dart';
 import '../core/format.dart';
 import '../data/booking_draft.dart';
 import '../data/models.dart';
+import '../l10n/booking_text.dart';
+import '../l10n/catalog_text.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 
@@ -24,32 +27,18 @@ class _BookingTypeScreenState extends State<BookingTypeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const options = [
-      (
-        BookingType.emergency,
-        Icons.bolt_rounded,
-        'The nearest available technician comes as soon as possible.',
-        'Avg. arrival 18 min',
-      ),
-      (
-        BookingType.scheduled,
-        Icons.calendar_month_rounded,
-        'Choose a date and a time window that suits you.',
-        'Pick a slot',
-      ),
-      (
-        BookingType.inspection,
-        Icons.straighten_rounded,
-        'A visit to inspect, measure and give you a quote first.',
-        'Quote before work',
-      ),
+    final l = context.l10n;
+    final options = [
+      (BookingType.emergency, Icons.bolt_rounded, l.typeEmergencyBody, l.typeEmergencyHint),
+      (BookingType.scheduled, Icons.calendar_month_rounded, l.typeScheduledBody, l.typeScheduledHint),
+      (BookingType.inspection, Icons.straighten_rounded, l.typeInspectionBody, l.typeInspectionHint),
     ];
     return Scaffold(
-      appBar: AppBar(title: Text(widget.draft.category.name)),
+      appBar: AppBar(title: Text(context.categoryName(widget.draft.category.slug, widget.draft.category.name))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('How soon do you need help?', style: Theme.of(context).textTheme.headlineSmall),
+          Text(l.howSoon, style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 16),
           for (final (type, icon, body, hint) in options)
             Padding(
@@ -75,7 +64,7 @@ class _BookingTypeScreenState extends State<BookingTypeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            bookingTypeLabel(type),
+                            context.bookingTypeLabel(type),
                             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 4),
@@ -97,11 +86,10 @@ class _BookingTypeScreenState extends State<BookingTypeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('How pricing works', style: TextStyle(fontWeight: FontWeight.w800)),
+                Text(l.howPricingWorks, style: const TextStyle(fontWeight: FontWeight.w800)),
                 const SizedBox(height: 6),
                 Text(
-                  'Visit fee ${formatLkr(widget.draft.category.visitFeeCents)} + labour + parts. '
-                  'The technician sends the final cost and you approve it before any work is charged.',
+                  l.pricingBody(context.lkr(widget.draft.category.visitFeeCents)),
                   style: const TextStyle(height: 1.4),
                 ),
               ],
@@ -115,7 +103,7 @@ class _BookingTypeScreenState extends State<BookingTypeScreen> {
             widget.draft.type = _type;
             context.push('/request/details', extra: widget.draft);
           },
-          child: Text('Continue with ${bookingTypeLabel(_type)}'),
+          child: Text(l.continueWith(context.bookingTypeLabel(_type))),
         ),
       ),
     );
@@ -181,11 +169,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final symptoms = _symptomsByCategory[draft.category.slug] ?? _defaultSymptoms;
     final valid = draft.problemType != null && _description.text.trim().length >= 10;
     return Scaffold(
-      appBar: AppBar(title: const Text('Request details')),
+      appBar: AppBar(title: Text(context.l10n.requestDetails)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const StepHeader(step: 1, label: 'Problem', title: 'What is the problem?'),
+          StepHeader(step: 1, label: context.l10n.stepProblem, title: context.l10n.whatIsProblem),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
@@ -193,22 +181,20 @@ class _DetailsScreenState extends State<DetailsScreen> {
             children: [
               for (final problem in draft.category.problemTypes)
                 ChoiceChip(
-                  label: Text(problem.name),
+                  label: Text(context.problemName(problem.name)),
                   selected: draft.problemType?.id == problem.id,
                   onSelected: (_) => setState(() => draft.problemType = problem),
                 ),
             ],
           ),
-          const SectionTitle('Tell us more'),
+          SectionTitle(context.l10n.tellUsMore),
           TextField(
             controller: _description,
             minLines: 4,
             maxLines: 6,
             maxLength: 1000,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              hintText: 'What happened, when it started, anything the technician should know (at least 10 characters)',
-            ),
+            decoration: InputDecoration(hintText: context.l10n.detailsHint),
             onChanged: (value) => setState(() => draft.description = value),
           ),
           Wrap(
@@ -217,7 +203,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             children: [
               for (final symptom in symptoms)
                 FilterChip(
-                  label: Text(symptom),
+                  label: Text(context.symptomName(symptom)),
                   selected: draft.symptoms.contains(symptom),
                   onSelected: (on) => setState(() => on ? draft.symptoms.add(symptom) : draft.symptoms.remove(symptom)),
                 ),
@@ -228,7 +214,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       bottomNavigationBar: BottomAction(
         child: FilledButton(
           onPressed: valid ? () => context.push('/request/photos', extra: draft) : null,
-          child: const Text('Continue'),
+          child: Text(context.l10n.continueLabel),
         ),
       ),
     );
@@ -263,7 +249,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
       }
       setState(() {});
     } catch (error) {
-      if (mounted) context.showError('Could not open photos. Please check permissions.');
+      if (mounted) context.showError(context.l10n.photoOpenError);
     }
   }
 
@@ -272,15 +258,15 @@ class _PhotosScreenState extends State<PhotosScreen> {
     final photos = widget.draft.photos;
     void next() => context.push('/request/location', extra: widget.draft);
     return Scaffold(
-      appBar: AppBar(title: const Text('Request details')),
+      appBar: AppBar(title: Text(context.l10n.requestDetails)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const StepHeader(
+          StepHeader(
             step: 2,
-            label: 'Photos',
-            title: 'Add photos',
-            subtitle: 'Optional, but it helps the technician bring the right tools and parts.',
+            label: context.l10n.stepPhotos,
+            title: context.l10n.addPhotos,
+            subtitle: context.l10n.photosSubtitle,
           ),
           const SizedBox(height: 20),
           GridView.count(
@@ -322,11 +308,11 @@ class _PhotosScreenState extends State<PhotosScreen> {
                       border: Border.all(color: AppColors.line, width: 1.5),
                       color: AppColors.surface,
                     ),
-                    child: const Column(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_rounded),
-                        Text('Add', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Icon(Icons.add_rounded),
+                        Text(context.l10n.add, style: const TextStyle(fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -340,7 +326,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
                 child: OutlinedButton.icon(
                   onPressed: photos.length < _max ? () => _pick(ImageSource.camera) : null,
                   icon: const Icon(Icons.photo_camera_outlined),
-                  label: const Text('Take photo'),
+                  label: Text(context.l10n.takePhoto),
                 ),
               ),
               const SizedBox(width: 10),
@@ -348,16 +334,16 @@ class _PhotosScreenState extends State<PhotosScreen> {
                 child: OutlinedButton.icon(
                   onPressed: photos.length < _max ? () => _pick(ImageSource.gallery) : null,
                   icon: const Icon(Icons.photo_library_outlined),
-                  label: const Text('From gallery'),
+                  label: Text(context.l10n.fromGallery),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          const Text('Tips for good photos', style: TextStyle(fontWeight: FontWeight.w700)),
+          Text(context.l10n.photoTips, style: const TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           Text(
-            '· Show the whole area, then a close-up\n· Include any model or label plate\n· Do not touch exposed wires',
+            context.l10n.photoTipsBody,
             style: TextStyle(color: AppColors.inkSoft, height: 1.6),
           ),
         ],
@@ -366,8 +352,8 @@ class _PhotosScreenState extends State<PhotosScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            FilledButton(onPressed: next, child: const Text('Continue')),
-            if (photos.isEmpty) TextButton(onPressed: next, child: const Text('Skip for now')),
+            FilledButton(onPressed: next, child: Text(context.l10n.continueLabel)),
+            if (photos.isEmpty) TextButton(onPressed: next, child: Text(context.l10n.skipForNow)),
           ],
         ),
       ),
@@ -454,7 +440,7 @@ class _LocationScreenState extends State<LocationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Request details')),
+      appBar: AppBar(title: Text(context.l10n.requestDetails)),
       body: FutureBuilder<List<SavedAddress>>(
         future: _saved,
         builder: (context, snapshot) {
@@ -467,10 +453,10 @@ class _LocationScreenState extends State<LocationScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                child: StepHeader(step: 3, label: 'Location', title: 'Where should the technician come?'),
+                child: StepHeader(step: 3, label: context.l10n.stepLocation, title: context.l10n.whereShouldComeTitle),
               ),
               MapPanel(
-                area: showForm ? (_area.text.isEmpty ? 'Your area' : _area.text) : (selected?.address.area ?? '…'),
+                area: showForm ? (_area.text.isEmpty ? context.l10n.yourArea : _area.text) : (selected?.address.area ?? '…'),
                 height: 160,
               ),
               Padding(
@@ -488,13 +474,13 @@ class _LocationScreenState extends State<LocationScreen> {
                                 address.label == 'OFFICE' ? Icons.business_rounded : Icons.home_rounded,
                                 size: 18,
                               ),
-                              label: Text(address.labelText),
+                              label: Text(context.addressLabelText(address.label)),
                               selected: !_addingNew && _savedId == address.id,
                               onSelected: (_) => setState(() => _selectSaved(address)),
                             ),
                           ChoiceChip(
                             avatar: const Icon(Icons.add_rounded, size: 18),
-                            label: const Text('Add new'),
+                            label: Text(context.l10n.addNew),
                             selected: _addingNew,
                             onSelected: (_) => setState(() => _addingNew = true),
                           ),
@@ -517,7 +503,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     if (showForm) ...[
                       TextField(
                         controller: _line1,
-                        decoration: const InputDecoration(labelText: 'Street address'),
+                        decoration: InputDecoration(labelText: context.l10n.streetAddress),
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 10),
@@ -526,7 +512,7 @@ class _LocationScreenState extends State<LocationScreen> {
                           Expanded(
                             child: TextField(
                               controller: _area,
-                              decoration: const InputDecoration(labelText: 'Area'),
+                              decoration: InputDecoration(labelText: context.l10n.areaLabel),
                               onChanged: (_) => setState(() {}),
                             ),
                           ),
@@ -534,7 +520,7 @@ class _LocationScreenState extends State<LocationScreen> {
                           Expanded(
                             child: TextField(
                               controller: _city,
-                              decoration: const InputDecoration(labelText: 'City'),
+                              decoration: InputDecoration(labelText: context.l10n.cityLabel),
                               onChanged: (_) => setState(() {}),
                             ),
                           ),
@@ -543,12 +529,12 @@ class _LocationScreenState extends State<LocationScreen> {
                       const SizedBox(height: 10),
                       TextField(
                         controller: _house,
-                        decoration: const InputDecoration(labelText: 'House / apartment number'),
+                        decoration: InputDecoration(labelText: context.l10n.houseNumber),
                       ),
                       const SizedBox(height: 10),
                       TextField(
                         controller: _landmark,
-                        decoration: const InputDecoration(labelText: 'Landmark or directions'),
+                        decoration: InputDecoration(labelText: context.l10n.landmarkLabel),
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -557,7 +543,7 @@ class _LocationScreenState extends State<LocationScreen> {
                             Padding(
                               padding: const EdgeInsets.only(right: 8),
                               child: ChoiceChip(
-                                label: Text(label[0] + label.substring(1).toLowerCase()),
+                                label: Text(context.addressLabelText(label)),
                                 selected: widget.draft.addressLabel == label,
                                 onSelected: (_) => setState(() => widget.draft.addressLabel = label),
                               ),
@@ -566,7 +552,7 @@ class _LocationScreenState extends State<LocationScreen> {
                       ),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Save this address'),
+                        title: Text(context.l10n.saveThisAddress),
                         value: widget.draft.saveAddress,
                         activeTrackColor: AppColors.ink,
                         onChanged: (value) => setState(() => widget.draft.saveAddress = value),
@@ -582,7 +568,7 @@ class _LocationScreenState extends State<LocationScreen> {
       bottomNavigationBar: BottomAction(
         child: FilledButton(
           onPressed: (_addingNew ? _newValid : _savedId != null) ? _confirm : null,
-          child: const Text('Confirm location'),
+          child: Text(context.l10n.confirmLocation),
         ),
       ),
     );
@@ -616,25 +602,27 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
   bool _available((int, int) window) =>
       _day.add(Duration(hours: window.$1)).isAfter(DateTime.now().add(const Duration(hours: 1)));
 
-  String _label((int, int) w) {
-    String h(int hour) => DateFormat('h a').format(DateTime(2000, 1, 1, hour));
+  String _label(BuildContext context, (int, int) w) {
+    final locale = Localizations.localeOf(context).languageCode;
+    String h(int hour) => DateFormat('h a', locale).format(DateTime(2000, 1, 1, hour));
     return '${h(w.$1)} – ${h(w.$2)}';
   }
 
   @override
   Widget build(BuildContext context) {
     final days = _days;
+    final locale = Localizations.localeOf(context).languageCode;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.draft.type == BookingType.inspection ? 'Inspection visit' : 'Schedule a visit'),
+        title: Text(widget.draft.type == BookingType.inspection ? context.l10n.inspectionVisit : context.l10n.scheduleVisit),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('When should we come?', style: Theme.of(context).textTheme.headlineSmall),
+          Text(context.l10n.whenShouldWeCome, style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 4),
           Text(
-            DateFormat('MMMM y').format(_day),
+            DateFormat('MMMM y', locale).format(_day),
             style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 14),
@@ -663,7 +651,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          DateFormat('EEE').format(day),
+                          DateFormat('EEE', locale).format(day),
                           style: TextStyle(
                             color: selected ? AppColors.yellow : AppColors.muted,
                             fontWeight: FontWeight.w600,
@@ -685,14 +673,14 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
               },
             ),
           ),
-          const SectionTitle('Arrival window'),
+          SectionTitle(context.l10n.arrivalWindow),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               for (final window in _windows)
                 ChoiceChip(
-                  label: Text(_label(window)),
+                  label: Text(_label(context, window)),
                   selected: _window == window,
                   onSelected: _available(window) ? (_) => setState(() => _window = window) : null,
                 ),
@@ -700,7 +688,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            'The technician will confirm the visit the day before. You can reschedule free until 2 hours before.',
+            context.l10n.visitConfirmNote,
             style: TextStyle(color: AppColors.muted, height: 1.4),
           ),
         ],
@@ -711,7 +699,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
           children: [
             if (_window != null) ...[
               Text(
-                'Selected: ${DateFormat('EEE d MMM').format(_day)} · ${_label(_window!)}',
+                context.l10n.selectedSlot('${DateFormat('EEE d MMM', locale).format(_day)} · ${_label(context, _window!)}'),
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 10),
@@ -725,7 +713,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                         ..windowEnd = _day.add(Duration(hours: _window!.$2));
                       context.push('/request/review', extra: widget.draft);
                     },
-              child: const Text('Continue'),
+              child: Text(context.l10n.continueLabel),
             ),
           ],
         ),
@@ -759,7 +747,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       }
     }
     if (!mounted) return;
-    if (failedPhotos > 0) context.toast('$failedPhotos photo(s) could not be uploaded');
+    if (failedPhotos > 0) context.toast(context.l10n.photosFailed(failedPhotos));
     context.go('/booking/${booking.id}');
   }
 
@@ -767,11 +755,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Widget build(BuildContext context) {
     final draft = widget.draft;
     return Scaffold(
-      appBar: AppBar(title: const Text('Review request')),
+      appBar: AppBar(title: Text(context.l10n.reviewRequest)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const StepHeader(step: 4, label: 'Review', title: 'Check your request'),
+          StepHeader(step: 4, label: context.l10n.stepReview, title: context.l10n.checkYourRequest),
           const SizedBox(height: 16),
           Card(
             child: Padding(
@@ -787,13 +775,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(draft.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-                            Text(draft.category.name, style: TextStyle(color: AppColors.muted)),
+                            Text(context.problemName(draft.title), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                            Text(context.categoryName(draft.category.slug, draft.category.name), style: TextStyle(color: AppColors.muted)),
                           ],
                         ),
                       ),
                       Pill(
-                        label: bookingTypeLabel(draft.type).toUpperCase(),
+                        label: context.bookingTypeLabel(draft.type).toUpperCase(),
                         background: draft.type == BookingType.emergency ? AppColors.yellow : AppColors.background,
                         foreground: draft.type == BookingType.emergency ? AppColors.black : AppColors.ink,
                       ),
@@ -814,19 +802,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     },
                   ),
                   if (draft.windowStart != null && draft.needsSchedule)
-                    _ReviewRow(icon: Icons.schedule_rounded, title: formatWindow(draft.windowStart!, draft.windowEnd!)),
+                    _ReviewRow(icon: Icons.schedule_rounded, title: context.window(draft.windowStart!, draft.windowEnd!)),
                   _ReviewRow(
                     icon: Icons.notes_rounded,
                     title: draft.description.trim(),
-                    subtitle: draft.symptoms.isEmpty ? null : draft.symptoms.join(' · '),
+                    subtitle: draft.symptoms.isEmpty ? null : draft.symptoms.map(context.symptomName).join(' · '),
                   ),
                   if (draft.photos.isNotEmpty)
-                    _ReviewRow(icon: Icons.photo_outlined, title: '${draft.photos.length} photo(s) attached'),
+                    _ReviewRow(icon: Icons.photo_outlined, title: context.l10n.photosAttached(draft.photos.length)),
                 ],
               ),
             ),
           ),
-          const SectionTitle('Estimated cost'),
+          SectionTitle(context.l10n.estimatedCost),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -834,9 +822,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 children: [
                   Row(
                     children: [
-                      const Expanded(child: Text('Visit fee')),
+                      Expanded(child: Text(context.l10n.visitFee)),
                       Text(
-                        formatLkr(draft.category.visitFeeCents),
+                        context.lkr(draft.category.visitFeeCents),
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ],
@@ -844,13 +832,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: Text('Labour and parts')),
-                      Text('Quoted on site', style: TextStyle(color: AppColors.muted)),
+                      Expanded(child: Text(context.l10n.labourAndParts)),
+                      Text(context.l10n.quotedOnSite, style: TextStyle(color: AppColors.muted)),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'You will approve the final cost in the app before any work is charged.',
+                    context.l10n.approveFinalCost,
                     style: TextStyle(color: AppColors.muted, fontSize: 13),
                   ),
                 ],
@@ -858,17 +846,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          const Card(
+          Card(
             child: ListTile(
-              leading: Icon(Icons.payments_outlined),
-              title: Text('Pay with Cash', style: TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: Text('After the job'),
+              leading: const Icon(Icons.payments_outlined),
+              title: Text(context.l10n.payWithCash, style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text(context.l10n.afterTheJob),
             ),
           ),
         ],
       ),
       bottomNavigationBar: BottomAction(
-        child: BusyButton(label: 'Request technician', onPressed: _submit),
+        child: BusyButton(label: context.l10n.requestTechnician, onPressed: _submit),
       ),
     );
   }

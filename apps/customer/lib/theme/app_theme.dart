@@ -1,7 +1,28 @@
 import 'package:flutter/material.dart';
 
 class AppFonts {
-  static const family = 'Poppins';
+  /// Poppins for English; a Sinhala / Tamil face for those languages, with
+  /// Poppins still drawing digits and Latin letters inside them.
+  static String family = 'Poppins';
+  static List<String> fallback = const ['NotoSansSinhala', 'NotoSansTamil'];
+
+  /// True for Sinhala and Tamil: no tight letter-spacing, a little more line height.
+  static bool indic = false;
+
+  static void apply(String languageCode) {
+    indic = languageCode == 'si' || languageCode == 'ta';
+    switch (languageCode) {
+      case 'si':
+        family = 'NotoSansSinhala';
+        fallback = const ['Poppins', 'NotoSansTamil'];
+      case 'ta':
+        family = 'NotoSansTamil';
+        fallback = const ['Poppins', 'NotoSansSinhala'];
+      default:
+        family = 'Poppins';
+        fallback = const ['NotoSansSinhala', 'NotoSansTamil'];
+    }
+  }
 }
 
 /// One set of brand colours (light or dark mode).
@@ -118,17 +139,23 @@ ThemeData buildTheme(Brightness brightness) {
     error: AppColors.danger,
   );
 
-  final base = ThemeData(useMaterial3: true, colorScheme: scheme, fontFamily: AppFonts.family);
+  final base = ThemeData(
+    useMaterial3: true,
+    colorScheme: scheme,
+    fontFamily: AppFonts.family,
+    fontFamilyFallback: AppFonts.fallback,
+  );
   final text = base.textTheme.apply(
     bodyColor: AppColors.ink,
     displayColor: AppColors.ink,
+    heightFactor: AppFonts.indic ? 1.2 : 1.0,
   );
 
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.background,
     textTheme: text.copyWith(
-      headlineMedium: text.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.6),
-      headlineSmall: text.headlineSmall?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.4),
+      headlineMedium: text.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: AppFonts.indic ? 0 : -0.6),
+      headlineSmall: text.headlineSmall?.copyWith(fontWeight: FontWeight.w700, letterSpacing: AppFonts.indic ? 0 : -0.4),
       titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
       titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),
     ),
@@ -139,7 +166,7 @@ ThemeData buildTheme(Brightness brightness) {
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
-        fontFamily: AppFonts.family,
+        fontFamily: AppFonts.family, fontFamilyFallback: AppFonts.fallback,
         color: AppColors.ink,
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -153,7 +180,7 @@ ThemeData buildTheme(Brightness brightness) {
         disabledBackgroundColor: AppColors.line,
         minimumSize: const Size.fromHeight(56),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        textStyle: const TextStyle(fontFamily: AppFonts.family, fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: TextStyle(fontFamily: AppFonts.family, fontFamilyFallback: AppFonts.fallback, fontSize: 16, fontWeight: FontWeight.w600),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -162,13 +189,13 @@ ThemeData buildTheme(Brightness brightness) {
         minimumSize: const Size.fromHeight(52),
         side: BorderSide(color: AppColors.line, width: 1.5),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        textStyle: const TextStyle(fontFamily: AppFonts.family, fontSize: 15, fontWeight: FontWeight.w600),
+        textStyle: TextStyle(fontFamily: AppFonts.family, fontFamilyFallback: AppFonts.fallback, fontSize: 15, fontWeight: FontWeight.w600),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: AppColors.ink,
-        textStyle: const TextStyle(fontFamily: AppFonts.family, fontWeight: FontWeight.w600),
+        textStyle: TextStyle(fontFamily: AppFonts.family, fontFamilyFallback: AppFonts.fallback, fontWeight: FontWeight.w600),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -194,7 +221,7 @@ ThemeData buildTheme(Brightness brightness) {
       selectedColor: AppColors.yellow,
       side: BorderSide(color: AppColors.line),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-      labelStyle: TextStyle(fontFamily: AppFonts.family, color: AppColors.ink, fontWeight: FontWeight.w500),
+      labelStyle: TextStyle(fontFamily: AppFonts.family, fontFamilyFallback: AppFonts.fallback, color: AppColors.ink, fontWeight: FontWeight.w500),
       showCheckmark: false,
     ),
     cardTheme: CardThemeData(
@@ -220,7 +247,7 @@ ThemeData buildTheme(Brightness brightness) {
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => TextStyle(
-          fontFamily: AppFonts.family,
+          fontFamily: AppFonts.family, fontFamilyFallback: AppFonts.fallback,
           fontSize: 12,
           fontWeight: states.contains(WidgetState.selected) ? FontWeight.w600 : FontWeight.w500,
           color: states.contains(WidgetState.selected) ? AppColors.ink : AppColors.muted,

@@ -86,7 +86,7 @@ class Wordmark extends StatelessWidget {
         ],
       ),
       style: TextStyle(
-        fontFamily: AppFonts.family,
+        fontFamily: 'Poppins', // the brand wordmark stays in Poppins in every language
         fontSize: fontSize,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.04 * fontSize,

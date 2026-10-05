@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand.dart';
 
@@ -18,13 +19,22 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 2600),
   )..addStatusListener((status) {
-      if (status == AnimationStatus.completed) widget.onFinished?.call();
+      if (status == AnimationStatus.completed) {
+        widget.onFinished?.call();
+        // If the app is still loading behind this screen, keep the logo breathing.
+        if (mounted && !MediaQuery.of(context).disableAnimations) _pulse.repeat(reverse: true);
+      }
     });
+
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1000),
+  );
 
   late final _logo = _interval(0, 0.62, Curves.linear);
   late final _wordmark = _interval(0.46, 0.7);
@@ -51,6 +61,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void dispose() {
     _controller.dispose();
+    _pulse.dispose();
     super.dispose();
   }
 
@@ -61,14 +72,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       child: Scaffold(
         backgroundColor: Colors.white,
         body: AnimatedBuilder(
-          animation: _controller,
+          animation: Listenable.merge([_controller, _pulse]),
           builder: (context, _) => Stack(
             children: [
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    RepairMeLogo(size: 116, palette: LogoPalette.onLight, progress: _logo.value),
+                    Transform.scale(
+                      scale: 1 + 0.05 * Curves.easeInOut.transform(_pulse.value),
+                      child: RepairMeLogo(size: 116, palette: LogoPalette.onLight, progress: _logo.value),
+                    ),
                     const SizedBox(height: 18),
                     Opacity(
                       opacity: _wordmark.value,
@@ -81,12 +95,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     Opacity(
                       opacity: _tagline.value,
                       child: Text(
-                        'FIXED. FAST. VERIFIED.',
+                        context.l10n.splashTagline,
                         style: TextStyle(
                           color: _grey,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          letterSpacing: 1.5 + 2.5 * _tagline.value,
+                          // Spaced-out letters only suit the Latin script.
+                          letterSpacing: Localizations.localeOf(context).languageCode == 'en' ? 1.5 + 2.5 * _tagline.value : 0,
                         ),
                       ),
                     ),
@@ -124,7 +139,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         Opacity(
                           opacity: _footer.value,
                           child: Text(
-                            'Proudly Sri Lankan',
+                            context.l10n.splashProud,
                             style: TextStyle(color: _grey, fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ),

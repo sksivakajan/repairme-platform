@@ -1,29 +1,42 @@
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+
+import '../l10n/l10n.dart';
 
 final _rupees = NumberFormat('#,##0', 'en_US');
 final _rupeesCents = NumberFormat('#,##0.00', 'en_US');
 
-/// 325000 cents -> "Rs. 3,250"
-String formatLkr(int cents) {
-  final value = cents / 100;
-  return 'Rs. ${cents % 100 == 0 ? _rupees.format(value) : _rupeesCents.format(value)}';
+bool _sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+
+/// True when [value] falls on today's date (phone time).
+bool isToday(DateTime value) => _sameDay(value.toLocal(), DateTime.now());
+
+/// Money, dates and times in the language the customer chose.
+extension Formatting on BuildContext {
+  String get _locale => Localizations.localeOf(this).languageCode;
+
+  /// 325000 cents -> "Rs. 3,250" (රු. / ரூ. in Sinhala / Tamil)
+  String lkr(int cents) {
+    final value = cents / 100;
+    return '${l10n.currencyPrefix} ${cents % 100 == 0 ? _rupees.format(value) : _rupeesCents.format(value)}';
+  }
+
+  String time(DateTime value) => DateFormat('h:mm a', _locale).format(value.toLocal());
+
+  String day(DateTime value) {
+    final local = value.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final date = DateTime(local.year, local.month, local.day);
+    if (date == today) return l10n.today;
+    if (date == today.subtract(const Duration(days: 1))) return l10n.yesterday;
+    if (date == today.add(const Duration(days: 1))) return l10n.tomorrow;
+    return DateFormat(local.year == now.year ? 'EEE d MMM' : 'd MMM y', _locale).format(local);
+  }
+
+  String window(DateTime start, DateTime end) =>
+      '${day(start)} · ${DateFormat('h:mm', _locale).format(start.toLocal())} – ${DateFormat('h:mm a', _locale).format(end.toLocal())}';
 }
-
-String formatTime(DateTime value) => DateFormat('h:mm a').format(value.toLocal());
-
-String formatDay(DateTime value) {
-  final local = value.toLocal();
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final day = DateTime(local.year, local.month, local.day);
-  if (day == today) return 'Today';
-  if (day == today.subtract(const Duration(days: 1))) return 'Yesterday';
-  if (day == today.add(const Duration(days: 1))) return 'Tomorrow';
-  return DateFormat(local.year == now.year ? 'EEE d MMM' : 'd MMM y').format(local);
-}
-
-String formatWindow(DateTime start, DateTime end) =>
-    '${formatDay(start)} · ${DateFormat('h:mm').format(start.toLocal())} – ${DateFormat('h:mm a').format(end.toLocal())}';
 
 String initials(String name) {
   final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();

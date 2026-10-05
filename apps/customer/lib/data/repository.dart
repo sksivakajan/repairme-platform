@@ -16,11 +16,77 @@ class Repository {
   Future<Profile> profile() async =>
       Profile.fromJson(await api.get('/me') as Map<String, dynamic>);
 
-  Future<Profile> updateProfile({String? fullName, String? language}) async =>
+  /// Only the fields you pass change. An empty email or birthday clears it.
+  Future<Profile> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? birthday,
+    String? gender,
+    String? language,
+  }) async =>
       Profile.fromJson(await api.patch('/me', {
-        'fullName': ?fullName,
+        'firstName': ?firstName,
+        'lastName': ?lastName,
+        'email': ?email,
+        'birthday': ?birthday,
+        'gender': ?gender,
         'language': ?language,
       }) as Map<String, dynamic>);
+
+  /// First-time account setup after the mobile number is verified.
+  Future<Profile> completeProfile({
+    required String firstName,
+    required String lastName,
+    String? email,
+    required List<DocumentRef> accepted,
+  }) async =>
+      Profile.fromJson(await api.post('/me/complete-profile', {
+        'firstName': firstName,
+        'lastName': lastName,
+        if (email != null && email.isNotEmpty) 'email': email,
+        'acceptedDocuments': [for (final d in accepted) d.toJson()],
+      }) as Map<String, dynamic>);
+
+  Future<Profile> changePhone(String e164) async =>
+      Profile.fromJson(await api.put('/me/phone', {'phoneNumber': e164}) as Map<String, dynamic>);
+
+  Future<void> deleteAccount(String reason, String? details) => api.post('/me/delete', {
+        'reason': reason,
+        if (details != null && details.trim().isNotEmpty) 'details': details.trim(),
+      });
+
+  Future<void> uploadProfilePhoto(Uint8List bytes, String filename) => api.upload('/me/photo', bytes, filename);
+  Future<Uint8List> profilePhoto() => api.getBytes('/me/photo');
+  Future<void> removeProfilePhoto() => api.delete('/me/photo');
+
+  Future<EmergencyContact?> emergencyContact() async {
+    final json = await api.get('/me/emergency-contact');
+    return json is Map<String, dynamic> && json.isNotEmpty ? EmergencyContact.fromJson(json) : null;
+  }
+
+  Future<EmergencyContact> saveEmergencyContact(String name, String relationship, String phone) async =>
+      EmergencyContact.fromJson(await api.put('/me/emergency-contact', {
+        'name': name,
+        'relationship': relationship,
+        'phoneNumber': phone,
+      }) as Map<String, dynamic>);
+
+  Future<void> removeEmergencyContact() => api.delete('/me/emergency-contact');
+
+  Future<NotificationPrefs> saveNotificationPreferences(NotificationPrefs prefs) async =>
+      NotificationPrefs.fromJson(await api.patch('/me/notification-preferences', prefs.toJson()) as Map<String, dynamic>);
+
+  Future<List<LegalDocument>> legalDocuments() async =>
+      (await api.get('/legal/documents') as List)
+          .map((e) => LegalDocument.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+  Future<LegalDocument> legalDocument(String type) async =>
+      LegalDocument.fromJson(await api.get('/legal/documents/$type') as Map<String, dynamic>);
+
+  Future<void> acceptLegal(List<DocumentRef> documents) =>
+      api.post('/me/legal-acceptances', {'documents': [for (final d in documents) d.toJson()]});
 
   Future<List<SavedAddress>> addresses() async =>
       (await api.get('/addresses') as List)
@@ -28,6 +94,18 @@ class Repository {
           .toList();
 
   Future<void> deleteAddress(String id) => api.delete('/addresses/$id');
+
+  Map<String, dynamic> _addressBody(AddressInput address, String label, bool isDefault) => {
+        ...address.toJson(),
+        'label': label,
+        'isDefault': isDefault,
+      };
+
+  Future<SavedAddress> createAddress(AddressInput address, {required String label, bool isDefault = false}) async =>
+      SavedAddress.fromJson(await api.post('/addresses', _addressBody(address, label, isDefault)) as Map<String, dynamic>);
+
+  Future<SavedAddress> updateAddress(String id, AddressInput address, {required String label, bool isDefault = false}) async =>
+      SavedAddress.fromJson(await api.put('/addresses/$id', _addressBody(address, label, isDefault)) as Map<String, dynamic>);
 
   Future<BookingDetail> createBooking(BookingDraft draft) async =>
       BookingDetail.fromJson(await api.post('/bookings', draft.toJson()) as Map<String, dynamic>);

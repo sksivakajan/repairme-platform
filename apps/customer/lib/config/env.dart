@@ -26,4 +26,18 @@ class Env {
       );
 
   static const devOtpCode = '123456';
+
+  // Company details and links, passed with --dart-define (see README). They are
+  // empty until RepairMe provides the real ones; screens show only what is set.
+  static const supportPhone = String.fromEnvironment('REPAIRME_SUPPORT_PHONE');
+  static const supportEmail = String.fromEnvironment('REPAIRME_SUPPORT_EMAIL');
+  static const supportChat = String.fromEnvironment('REPAIRME_SUPPORT_CHAT');
+  static const email = String.fromEnvironment('REPAIRME_EMAIL');
+  static const privacyEmail = String.fromEnvironment('REPAIRME_PRIVACY_EMAIL');
+  static const phone = String.fromEnvironment('REPAIRME_PHONE');
+  static const website = String.fromEnvironment('REPAIRME_WEBSITE');
+  static const address = String.fromEnvironment('REPAIRME_ADDRESS');
+  static const instagramUrl = String.fromEnvironment('REPAIRME_INSTAGRAM_URL');
+  static const facebookUrl = String.fromEnvironment('REPAIRME_FACEBOOK_URL');
+  static const linkedinUrl = String.fromEnvironment('REPAIRME_LINKEDIN_URL');
 }

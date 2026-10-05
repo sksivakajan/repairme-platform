@@ -1,43 +1,82 @@
 import 'package:flutter/material.dart';
 
 import '../core/api_client.dart';
+import '../core/app_language.dart';
 import '../core/appearance.dart';
 import '../core/format.dart';
 import '../core/session.dart';
 import '../data/models.dart';
 import '../data/repository.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
+import 'motion.dart';
 
 /// Gives every screen access to the session, the API repository and the
-/// appearance setting.
+/// appearance and language settings.
 class AppScope extends InheritedWidget {
   const AppScope({
     super.key,
     required this.session,
     required this.repo,
     required this.appearance,
+    required this.language,
     required super.child,
   });
 
   final Session session;
   final Repository repo;
   final Appearance appearance;
+  final AppLanguage language;
 
   static AppScope of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppScope>()!;
 
   @override
   bool updateShouldNotify(AppScope oldWidget) =>
-      session != oldWidget.session || repo != oldWidget.repo || appearance != oldWidget.appearance;
+      session != oldWidget.session || repo != oldWidget.repo || appearance != oldWidget.appearance ||
+      language != oldWidget.language;
+}
+
+/// A message already written for the customer (in their language), to throw
+/// from an action so the button shows it instead of a raw error.
+class UserMessage implements Exception {
+  const UserMessage(this.text);
+
+  final String text;
+
+  @override
+  String toString() => text;
+}
+
+/// Server messages are English, so the ones that are about the connection or
+/// the session are replaced with the customer's language.
+String friendlyApiMessage(BuildContext context, ApiException error) {
+  if (error.statusCode == 0) return context.l10n.networkError;
+  if (error.isUnauthorized) return context.l10n.signInAgain;
+  return error.message;
 }
 
 extension AppContext on BuildContext {
   Repository get repo => AppScope.of(this).repo;
   Session get session => AppScope.of(this).session;
   Appearance get appearance => AppScope.of(this).appearance;
+  AppLanguage get language => AppScope.of(this).language;
 
   void showError(Object error) {
-    final message = error is ApiException ? error.message : error.toString();
+    final message = switch (error) {
+      ApiException() => friendlyApiMessage(this, error),
+      AuthError() => switch (error.issue) {
+          AuthIssue.incorrectCodeDev => l10n.authIncorrectCodeDev(error.detail ?? ''),
+          AuthIssue.requestNewCode => l10n.authRequestNewCode,
+          AuthIssue.incorrectCode => l10n.authIncorrectCode,
+          AuthIssue.invalidPhone => l10n.authInvalidPhone,
+          AuthIssue.tooManyAttempts => l10n.authTooMany,
+          AuthIssue.expired => l10n.authExpired,
+          AuthIssue.phoneInUse => l10n.authPhoneInUse,
+          AuthIssue.failed => l10n.authFailed,
+        },
+      _ => error.toString(),
+    };
     ScaffoldMessenger.of(this)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
@@ -100,7 +139,7 @@ class _AsyncViewState<T> extends State<AsyncView<T>> {
           return ErrorState(error: snapshot.error!, onRetry: _reload);
         }
         if (data == null) {
-          return Center(child: CircularProgressIndicator(color: AppColors.ink));
+          return const Center(child: LogoLoader());
         }
         return widget.builder(context, data, _reload);
       },
@@ -117,7 +156,9 @@ class ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (error is! ApiException) debugPrint('Unexpected error: $error');
-    final message = error is ApiException ? (error as ApiException).message : 'Something went wrong.';
+    final message = error is ApiException
+        ? friendlyApiMessage(context, error as ApiException)
+        : context.l10n.somethingWentWrong;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -128,7 +169,7 @@ class ErrorState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            SizedBox(width: 160, child: OutlinedButton(onPressed: onRetry, child: const Text('Try again'))),
+            SizedBox(width: 160, child: OutlinedButton(onPressed: onRetry, child: Text(context.l10n.tryAgain))),
           ],
         ),
       ),
@@ -220,19 +261,24 @@ class Avatar extends StatelessWidget {
 }
 
 /// Booking status as the customer sees it (C22 tags).
-({String label, Color background, Color foreground}) statusStyle(String status, BookingType type) {
+({String label, Color background, Color foreground}) statusStyle(
+  BuildContext context,
+  String status,
+  BookingType type,
+) {
+  final l = context.l10n;
   return switch (status) {
-    'SEARCHING' => (label: 'FINDING', background: AppColors.yellow, foreground: AppColors.black),
-    'OPERATOR_ASSIGNING' => (label: 'ASSIGNING', background: AppColors.yellow, foreground: AppColors.black),
+    'SEARCHING' => (label: l.statusFinding, background: AppColors.yellow, foreground: AppColors.black),
+    'OPERATOR_ASSIGNING' => (label: l.statusAssigning, background: AppColors.yellow, foreground: AppColors.black),
     'ASSIGNED' => type == BookingType.emergency
-        ? (label: 'ASSIGNED', background: AppColors.yellowSoft, foreground: AppColors.ink)
-        : (label: 'SCHEDULED', background: const Color(0xFFE3EEFB), foreground: AppColors.info),
-    'EN_ROUTE' => (label: 'ON THE WAY', background: AppColors.yellow, foreground: AppColors.black),
+        ? (label: l.statusAssigned, background: AppColors.yellowSoft, foreground: AppColors.ink)
+        : (label: l.statusScheduled, background: const Color(0xFFE3EEFB), foreground: AppColors.info),
+    'EN_ROUTE' => (label: l.statusOnTheWay, background: AppColors.yellow, foreground: AppColors.black),
     'ARRIVED' || 'AWAITING_APPROVAL' || 'IN_PROGRESS' =>
-      (label: 'WORKING', background: AppColors.solid, foreground: AppColors.yellow),
-    'COMPLETED' => (label: 'PAYMENT DUE', background: AppColors.yellow, foreground: AppColors.black),
-    'PAID' => (label: 'COMPLETED', background: const Color(0xFFE2F3E8), foreground: AppColors.success),
-    'CANCELLED' => (label: 'CANCELLED', background: AppColors.line, foreground: AppColors.muted),
+      (label: l.statusWorking, background: AppColors.solid, foreground: AppColors.yellow),
+    'COMPLETED' => (label: l.statusPaymentDue, background: AppColors.yellow, foreground: AppColors.black),
+    'PAID' => (label: l.statusCompleted, background: const Color(0xFFE2F3E8), foreground: AppColors.success),
+    'CANCELLED' => (label: l.statusCancelled, background: AppColors.line, foreground: AppColors.muted),
     _ => (label: status, background: AppColors.line, foreground: AppColors.ink),
   };
 }
@@ -245,7 +291,7 @@ class StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = statusStyle(status, type);
+    final style = statusStyle(context, status, type);
     return Pill(label: style.label, background: style.background, foreground: style.foreground);
   }
 }
@@ -264,7 +310,12 @@ class Pill extends StatelessWidget {
       decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(6)),
       child: Text(
         label,
-        style: TextStyle(color: foreground, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.6),
+        style: TextStyle(
+          color: foreground,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: Localizations.localeOf(context).languageCode == 'en' ? 0.6 : 0,
+        ),
       ),
     );
   }
@@ -359,7 +410,7 @@ class StepHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        Text('Step $step of 4 · $label',
+        Text(context.l10n.stepOf('$step', label),
             style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         Text(title, style: Theme.of(context).textTheme.headlineSmall),
@@ -456,7 +507,7 @@ class CostLines extends StatelessWidget {
     required this.partsCents,
     required this.totalCents,
     this.items = const [],
-    this.totalLabel = 'Total',
+    this.totalLabel,
   });
 
   final int visitFeeCents;
@@ -464,7 +515,7 @@ class CostLines extends StatelessWidget {
   final int partsCents;
   final int totalCents;
   final List<QuotationItem> items;
-  final String totalLabel;
+  final String? totalLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -479,7 +530,7 @@ class CostLines extends StatelessWidget {
         child: Row(
           children: [
             Expanded(child: Text(label, style: style)),
-            Text(formatLkr(cents), style: style),
+            Text(context.lkr(cents), style: style),
           ],
         ),
       );
@@ -487,12 +538,12 @@ class CostLines extends StatelessWidget {
 
     return Column(
       children: [
-        line('Visit fee', visitFeeCents),
-        line('Labour', labourCents),
-        line('Parts', partsCents),
+        line(context.l10n.visitFee, visitFeeCents),
+        line(context.l10n.labour, labourCents),
+        line(context.l10n.parts, partsCents),
         for (final item in items) line('${item.description} × ${item.quantity}', item.totalCents, sub: true),
         const Padding(padding: EdgeInsets.only(top: 12), child: Divider()),
-        line(totalLabel, totalCents, bold: true),
+        line(totalLabel ?? context.l10n.total, totalCents, bold: true),
       ],
     );
   }

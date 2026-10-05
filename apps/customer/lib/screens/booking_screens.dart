@@ -6,6 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import '../core/format.dart';
 import '../data/models.dart';
+import '../l10n/booking_text.dart';
+import '../l10n/catalog_text.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 import 'tab_screens.dart' show showNewTicketSheet;
@@ -23,7 +26,8 @@ mixin _LiveBooking<T extends StatefulWidget> on State<T> {
   @override
   void initState() {
     super.initState();
-    refresh();
+    // After initState: looking up the app scope isn't allowed while it runs.
+    Future.microtask(refresh);
     _timer = Timer.periodic(_livePollInterval, (_) {
       if (booking == null || !_terminal.contains(booking!.status)) refresh();
     });
@@ -81,11 +85,11 @@ class _BookingScreenState extends State<BookingScreen> with _LiveBooking {
     return Scaffold(
       appBar: AppBar(
         title: Text(switch (b.status) {
-          'SEARCHING' => 'Finding a technician',
-          'OPERATOR_ASSIGNING' => 'Team is assigning',
-          'ASSIGNED' || 'EN_ROUTE' => 'Technician assigned',
-          'CANCELLED' => 'Cancelled request',
-          _ => 'Job status',
+          'SEARCHING' => context.l10n.bkFinding,
+          'OPERATOR_ASSIGNING' => context.l10n.bkTeamAssigning,
+          'ASSIGNED' || 'EN_ROUTE' => context.l10n.bkAssigned,
+          'CANCELLED' => context.l10n.bkCancelledRequest,
+          _ => context.l10n.bkJobStatus,
         }),
         leading: BackButton(onPressed: () => context.canPop() ? context.pop() : context.go('/home')),
       ),
@@ -104,15 +108,16 @@ class _FindingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final operator = booking.status == 'OPERATOR_ASSIGNING';
     final steps = operator
         ? [
-            ('Request received', true),
-            ('No technician accepted', true),
-            ('RepairMe team assigning', false),
-            ('Technician confirms', false),
+            (l.stepRequestReceived, true),
+            (l.stepNoTechAccepted, true),
+            (l.stepTeamAssigning, false),
+            (l.stepTechConfirms, false),
           ]
-        : [('Request received', true), ('Matching technicians nearby', false), ('Technician confirms', false)];
+        : [(l.stepRequestReceived, true), (l.stepMatchingNearby, false), (l.stepTechConfirms, false)];
     return ListView(
       padding: EdgeInsets.zero,
       children: [
@@ -127,23 +132,28 @@ class _FindingView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Request #${booking.reference}',
+                l.requestRef(booking.reference),
                 style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
               Text(
                 operator
-                    ? 'Our team is finding someone for you'
-                    : 'Finding a verified ${booking.categoryName.toLowerCase()} technician',
+                    ? l.operatorFindingTitle
+                    : l.findingVerifiedTitle(context.categoryByName(booking.categoryName).toLowerCase()),
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 6),
               Text(
                 operator
-                    ? 'No technician accepted yet, so a RepairMe operator is assigning one for you. Usually under 2 minutes.'
+                    ? l.operatorFindingBody
                     : booking.type == BookingType.emergency
-                    ? 'Matching you with technicians near ${booking.addressArea}.'
-                    : 'We are confirming a technician for ${formatWindow(booking.scheduledStart ?? booking.createdAt, booking.scheduledEnd ?? booking.createdAt)}.',
+                    ? l.matchingNear(booking.addressArea)
+                    : l.confirmingFor(
+                        context.window(
+                          booking.scheduledStart ?? booking.createdAt,
+                          booking.scheduledEnd ?? booking.createdAt,
+                        ),
+                      ),
                 style: TextStyle(color: AppColors.inkSoft, height: 1.4),
               ),
               const SizedBox(height: 20),
@@ -157,7 +167,7 @@ class _FindingView extends StatelessWidget {
               if (!operator) ...[
                 const SizedBox(height: 12),
                 Text(
-                  'If nobody accepts, the RepairMe team assigns a technician for you.',
+                  l.ifNobodyAccepts,
                   style: TextStyle(color: AppColors.muted, fontSize: 13),
                 ),
               ],
@@ -165,7 +175,7 @@ class _FindingView extends StatelessWidget {
               if (booking.canCancel)
                 OutlinedButton(
                   onPressed: () => showCancelSheet(context, booking, onChanged),
-                  child: const Text('Cancel request'),
+                  child: Text(l.cancelRequest),
                 ),
             ],
           ),
@@ -269,11 +279,12 @@ class _TimelineRow extends StatelessWidget {
 // ─── C26 · Cancel request ────────────────────────────────────────────────────
 
 Future<void> showCancelSheet(BuildContext context, BookingDetail booking, ValueChanged<BookingDetail> onChanged) async {
-  const reasons = [
-    ('FOUND_SOMEONE_ELSE', 'Found someone else'),
-    ('PROBLEM_FIXED', 'Problem is fixed'),
-    ('WAITING_TOO_LONG', 'Waiting too long'),
-    ('OTHER', 'Other'),
+  final l = context.l10n;
+  final reasons = [
+    ('FOUND_SOMEONE_ELSE', l.reasonFoundSomeone),
+    ('PROBLEM_FIXED', l.reasonProblemFixed),
+    ('WAITING_TOO_LONG', l.reasonWaitingTooLong),
+    ('OTHER', l.otherLabel),
   ];
   String? reason;
   final details = TextEditingController();
@@ -290,12 +301,12 @@ Future<void> showCancelSheet(BuildContext context, BookingDetail booking, ValueC
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Cancel this request?', style: Theme.of(sheetContext).textTheme.titleLarge),
+            Text(l.cancelThisRequest, style: Theme.of(sheetContext).textTheme.titleLarge),
             const SizedBox(height: 6),
             Text(
               noTechnician
-                  ? 'No charge, since no technician has been assigned yet.'
-                  : 'No charge, since ${booking.technician!.firstName} has not arrived yet.',
+                  ? l.noChargeNoTech
+                  : l.noChargeNotArrived(booking.technician!.firstName),
               style: TextStyle(color: AppColors.muted),
             ),
             const SizedBox(height: 12),
@@ -311,7 +322,7 @@ Future<void> showCancelSheet(BuildContext context, BookingDetail booking, ValueC
             if (reason == 'OTHER')
               TextField(
                 controller: details,
-                decoration: const InputDecoration(hintText: 'Tell us more (optional)'),
+                decoration: InputDecoration(hintText: l.tellUsMoreOptional),
               ),
             const SizedBox(height: 16),
             Row(
@@ -319,13 +330,13 @@ Future<void> showCancelSheet(BuildContext context, BookingDetail booking, ValueC
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(sheetContext),
-                    child: const Text('Keep waiting'),
+                    child: Text(l.keepWaiting),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: BusyButton(
-                    label: 'Cancel request',
+                    label: l.cancelRequest,
                     color: AppColors.danger,
                     onPressed: reason == null
                         ? null
@@ -374,7 +385,7 @@ class _AssignedView extends StatelessWidget {
                   left: 16,
                   top: 16,
                   child: Pill(
-                    label: 'ETA ${booking.etaMinutes} MIN',
+                    label: context.l10n.etaMin('${booking.etaMinutes}'),
                     background: AppColors.black,
                     foreground: AppColors.yellow,
                   ),
@@ -388,20 +399,20 @@ class _AssignedView extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: onTheWay
-                    ? const Pill(label: 'ON THE WAY', background: AppColors.yellow, foreground: AppColors.black)
+                    ? Pill(label: context.l10n.statusOnTheWay, background: AppColors.yellow, foreground: AppColors.black)
                     : StatusPill(status: booking.status, type: booking.type),
               ),
               const SizedBox(height: 10),
               Text(
                 onTheWay
-                    ? '${tech.firstName} is on the way'
+                    ? context.l10n.techOnTheWayTitle(tech.firstName)
                     : booking.scheduledStart != null
-                    ? '${tech.firstName} will visit ${formatWindow(booking.scheduledStart!, booking.scheduledEnd!)}'
-                    : '${tech.firstName} accepted your request',
+                    ? context.l10n.techWillVisit(tech.firstName, context.window(booking.scheduledStart!, booking.scheduledEnd!))
+                    : context.l10n.techAccepted(tech.firstName),
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               if (onTheWay && booking.etaMinutes != null)
-                Text('Arrives in about ${booking.etaMinutes} min', style: TextStyle(color: AppColors.inkSoft)),
+                Text(context.l10n.arrivesInAbout('${booking.etaMinutes}'), style: TextStyle(color: AppColors.inkSoft)),
               const SizedBox(height: 16),
               TechnicianCard(technician: tech, categoryName: booking.categoryName),
               const SizedBox(height: 12),
@@ -411,12 +422,12 @@ class _AssignedView extends StatelessWidget {
               const SizedBox(height: 10),
               OutlinedButton(
                 onPressed: () => context.push('/booking/${booking.id}/status'),
-                child: const Text('View job status'),
+                child: Text(context.l10n.viewJobStatus),
               ),
               if (booking.canCancel)
                 TextButton(
                   onPressed: () => showCancelSheet(context, booking, onChanged),
-                  child: Text('Cancel booking', style: TextStyle(color: AppColors.danger)),
+                  child: Text(context.l10n.cancelBooking, style: TextStyle(color: AppColors.danger)),
                 ),
             ],
           ),
@@ -450,9 +461,12 @@ class TechnicianCard extends StatelessWidget {
                     children: [
                       Icon(Icons.verified_rounded, size: 15, color: AppColors.success),
                       const SizedBox(width: 4),
-                      Text(
-                        'Verified ${categoryName.toLowerCase()} technician',
-                        style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                      Flexible(
+                        child: Text(
+                          context.l10n.verifiedCategoryTech(context.categoryByName(categoryName).toLowerCase()),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: AppColors.inkSoft, fontSize: 13),
+                        ),
                       ),
                     ],
                   ),
@@ -462,7 +476,7 @@ class TechnicianCard extends StatelessWidget {
                       const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF5A300)),
                       const SizedBox(width: 2),
                       Text(
-                        '${technician.rating?.toStringAsFixed(1) ?? 'New'} · ${technician.jobsCompleted} jobs',
+                        context.l10n.ratingAndJobs(technician.rating?.toStringAsFixed(1) ?? context.l10n.newTech, technician.jobsCompleted),
                         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                       ),
                     ],
@@ -492,7 +506,7 @@ class JobCodeCard extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              'Job code · share only when $technicianName arrives',
+              context.l10n.jobCodeShare(technicianName),
               style: const TextStyle(color: Color(0xFFBDBBB3), fontSize: 13),
             ),
           ),
@@ -531,7 +545,7 @@ class ChatButton extends StatelessWidget {
         label: Text('${booking.unreadMessages}'),
         child: const Icon(Icons.chat_bubble_outline_rounded),
       ),
-      label: Text('Message ${booking.technician!.firstName}'),
+      label: Text(context.l10n.messageTech(booking.technician!.firstName)),
     );
   }
 }
@@ -548,10 +562,11 @@ class _JobStatusView extends StatelessWidget {
   Widget build(BuildContext context) {
     final b = booking;
     final pending = b.pendingQuotation;
-    final techName = b.technician?.firstName ?? 'Technician';
+    final l = context.l10n;
+    final techName = b.technician?.firstName ?? l.tradeTechnician;
     String? at(String status) {
       final time = b.eventAt(status);
-      return time == null ? null : '${formatDay(time)}, ${formatTime(time)}';
+      return time == null ? null : '${context.day(time)}, ${context.time(time)}';
     }
 
     final order = ['SEARCHING', 'ASSIGNED', 'EN_ROUTE', 'ARRIVED', 'AWAITING_APPROVAL', 'COMPLETED', 'PAID'];
@@ -565,13 +580,13 @@ class _JobStatusView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('Job #${b.reference}', style: Theme.of(context).textTheme.headlineSmall),
-        Text('${b.categoryName} · ${bookingTypeLabel(b.type)}', style: TextStyle(color: AppColors.muted)),
+        Text(l.jobNumber(b.reference), style: Theme.of(context).textTheme.headlineSmall),
+        Text('${context.categoryByName(b.categoryName)} · ${context.bookingTypeLabel(b.type)}', style: TextStyle(color: AppColors.muted)),
         const SizedBox(height: 16),
         if (pending != null)
           _ActionBanner(
-            title: 'Cost ready for your approval',
-            body: '$techName sent ${formatLkr(pending.totalCents)} · Tap to review',
+            title: l.costReadyTitle,
+            body: l.costReadyBody(techName, context.lkr(pending.totalCents)),
             onTap: () async {
               await context.push('/booking/${b.id}/cost');
               await onRefresh();
@@ -579,8 +594,8 @@ class _JobStatusView extends StatelessWidget {
           ),
         if (b.status == 'COMPLETED')
           _ActionBanner(
-            title: 'Repair completed',
-            body: 'Pay ${formatLkr(b.payment?.amountCents ?? 0)} to $techName',
+            title: l.repairCompleted,
+            body: l.payTo(context.lkr(b.payment?.amountCents ?? 0), techName),
             onTap: () async {
               await context.push('/booking/${b.id}/payment');
               await onRefresh();
@@ -588,42 +603,42 @@ class _JobStatusView extends StatelessWidget {
           ),
         if (b.status == 'PAID')
           _ActionBanner(
-            title: 'Payment received',
-            body: b.rating == null ? 'View receipt and rate $techName' : 'View receipt',
+            title: l.paymentReceived,
+            body: b.rating == null ? l.viewReceiptRate(techName) : l.viewReceipt,
             onTap: () => context.push('/booking/${b.id}/receipt'),
           ),
         if (b.status == 'CANCELLED')
           Card(
             child: ListTile(
               leading: const Icon(Icons.cancel_outlined),
-              title: const Text('This booking was cancelled', style: TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: Text(b.cancelledBy == 'CUSTOMER' ? 'Cancelled by you · no charge' : 'Cancelled by RepairMe'),
+              title: Text(l.bookingWasCancelled, style: const TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: Text(b.cancelledBy == 'CUSTOMER' ? l.cancelledByYouNoCharge : l.cancelledByRepairMe),
             ),
           ),
         const SizedBox(height: 16),
         if (b.status != 'CANCELLED') ...[
-          _TimelineRow(label: 'Request created', done: true, detail: at('SEARCHING')),
+          _TimelineRow(label: l.tlRequestCreated, done: true, detail: at('SEARCHING')),
           _TimelineRow(
-            label: 'Technician accepted',
+            label: l.tlAccepted,
             done: done('ASSIGNED'),
             detail: b.technician == null ? null : '${b.technician!.displayName} · ${at('ASSIGNED') ?? ''}',
           ),
-          _TimelineRow(label: 'On the way', done: done('EN_ROUTE'), detail: at('EN_ROUTE')),
+          _TimelineRow(label: l.tlOnTheWay, done: done('EN_ROUTE'), detail: at('EN_ROUTE')),
           _TimelineRow(
-            label: 'Arrived',
+            label: l.tlArrived,
             done: done('ARRIVED'),
-            detail: done('ARRIVED') ? 'Job code verified · ${at('ARRIVED') ?? ''}' : null,
+            detail: done('ARRIVED') ? l.tlJobCodeVerified(at('ARRIVED') ?? '') : null,
           ),
           _TimelineRow(
-            label: 'Working',
+            label: l.tlWorking,
             done: done('AWAITING_APPROVAL'),
             active: b.status == 'ARRIVED' || b.status == 'IN_PROGRESS',
             detail: b.status == 'IN_PROGRESS'
-                ? 'Cost approved, work under way'
-                : (pending != null ? 'Inspection done, cost sent' : null),
+                ? l.tlCostApproved
+                : (pending != null ? l.tlInspectionDone : null),
           ),
-          _TimelineRow(label: 'Completed', done: done('COMPLETED'), detail: at('COMPLETED')),
-          _TimelineRow(label: 'Pay and rate', done: done('PAID'), last: true, detail: at('PAID')),
+          _TimelineRow(label: l.tlCompleted, done: done('COMPLETED'), detail: at('COMPLETED')),
+          _TimelineRow(label: l.tlPayAndRate, done: done('PAID'), last: true, detail: at('PAID')),
         ],
         if (b.technician != null) ...[
           const SizedBox(height: 8),
@@ -631,17 +646,17 @@ class _JobStatusView extends StatelessWidget {
           const SizedBox(height: 12),
           ChatButton(booking: b, onReturn: onRefresh),
         ],
-        if (problem.isNotEmpty) PhotoStrip(title: 'Your photos', bookingId: b.id, photos: problem),
-        if (before.isNotEmpty) PhotoStrip(title: 'Before photos by $techName', bookingId: b.id, photos: before),
-        if (after.isNotEmpty) PhotoStrip(title: 'After photos', bookingId: b.id, photos: after),
-        const SectionTitle('Request'),
+        if (problem.isNotEmpty) PhotoStrip(title: l.yourPhotos, bookingId: b.id, photos: problem),
+        if (before.isNotEmpty) PhotoStrip(title: l.beforePhotosBy(techName), bookingId: b.id, photos: before),
+        if (after.isNotEmpty) PhotoStrip(title: l.afterPhotos, bookingId: b.id, photos: after),
+        SectionTitle(l.requestHeading),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(b.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(context.problemName(b.title), style: const TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
                 Text(b.description),
                 const SizedBox(height: 8),
@@ -652,9 +667,9 @@ class _JobStatusView extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         TextButton.icon(
-          onPressed: () => showNewTicketSheet(context, bookingId: b.id, subject: 'Problem with ${b.reference}'),
+          onPressed: () => showNewTicketSheet(context, bookingId: b.id, subject: l.problemWithRef(b.reference)),
           icon: const Icon(Icons.flag_outlined),
-          label: const Text('Report a problem with this job'),
+          label: Text(l.reportProblemWithJob),
         ),
       ],
     );
@@ -779,7 +794,7 @@ class _JobStatusScreenState extends State<JobStatusScreen> with _LiveBooking {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Job status')),
+      appBar: AppBar(title: Text(context.l10n.bkJobStatus)),
       body: booking == null
           ? (loadError != null
                 ? ErrorState(error: loadError!, onRetry: refresh)
@@ -861,7 +876,7 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
       appBar: AppBar(
         titleSpacing: 0,
         title: tech == null
-            ? const Text('Chat')
+            ? Text(context.l10n.chat)
             : Row(
                 children: [
                   Avatar(name: tech.displayName, size: 36),
@@ -872,8 +887,8 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
                       Text(tech.displayName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                       Text(
                         b!.status == 'EN_ROUTE' && b.etaMinutes != null
-                            ? 'On the way · ETA ${b.etaMinutes} min'
-                            : statusStyle(b.status, b.type).label.toLowerCase(),
+                            ? context.l10n.onTheWayEta('${b.etaMinutes}')
+                            : statusStyle(context, b.status, b.type).label.toLowerCase(),
                         style: TextStyle(fontSize: 12, color: AppColors.muted),
                       ),
                     ],
@@ -889,7 +904,7 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: AppColors.yellowSoft, borderRadius: BorderRadius.circular(12)),
             child: Text(
-              'Messages are recorded for your safety. Never share your job code until ${tech?.firstName ?? 'the technician'} arrives.',
+              context.l10n.chatSafety(tech?.firstName ?? context.l10n.theTechnician),
               style: const TextStyle(fontSize: 13),
             ),
           ),
@@ -917,7 +932,7 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
                         Text(m.body, style: TextStyle(color: m.mine ? Colors.white : AppColors.ink)),
                         const SizedBox(height: 2),
                         Text(
-                          '${formatTime(m.createdAt)}${m.mine && m.readAt != null ? ' · Seen' : ''}',
+                          m.mine && m.readAt != null ? context.l10n.timeSeen(context.time(m.createdAt)) : context.time(m.createdAt),
                           style: TextStyle(fontSize: 11, color: m.mine ? const Color(0xFFBDBBB3) : AppColors.muted),
                         ),
                       ],
@@ -934,7 +949,7 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 children: [
-                  for (final quick in ['I am at home', 'Call me', 'Use the side gate'])
+                  for (final quick in [context.l10n.quickAtHome, context.l10n.quickCallMe, context.l10n.quickSideGate])
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ActionChip(label: Text(quick), onPressed: () => _send(quick)),
@@ -952,7 +967,7 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
                       child: TextField(
                         controller: _input,
                         textCapitalization: TextCapitalization.sentences,
-                        decoration: const InputDecoration(hintText: 'Message'),
+                        decoration: InputDecoration(hintText: context.l10n.messageHint),
                         onSubmitted: (_) => _send(),
                       ),
                     ),
@@ -969,8 +984,8 @@ class _ChatScreenState extends State<ChatScreen> with _LiveBooking {
           ] else
             SafeArea(
               child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Text('Chat is closed for this booking.', style: TextStyle(color: AppColors.muted)),
+                padding: const EdgeInsets.all(16),
+                child: Text(context.l10n.chatClosed, style: TextStyle(color: AppColors.muted)),
               ),
             ),
         ],
@@ -999,11 +1014,11 @@ class _CostApprovalScreenState extends State<CostApprovalScreen> with _LiveBooki
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Decline this cost?'),
-          content: const Text('The technician will be told. Only the visit fee applies if no work is done.'),
+          title: Text(dialogContext.l10n.declineCostQ),
+          content: Text(dialogContext.l10n.declineCostBody),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Back')),
-            TextButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Decline')),
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: Text(dialogContext.l10n.back)),
+            TextButton(onPressed: () => Navigator.pop(dialogContext, true), child: Text(dialogContext.l10n.decline)),
           ],
         ),
       );
@@ -1012,7 +1027,7 @@ class _CostApprovalScreenState extends State<CostApprovalScreen> with _LiveBooki
     if (!mounted) return;
     await context.repo.decideQuotation(widget.id, quotation.id, approve: approve);
     if (mounted) {
-      context.toast(approve ? 'Cost approved. Work continues.' : 'Cost declined');
+      context.toast(approve ? context.l10n.costApprovedToast : context.l10n.costDeclinedToast);
       context.pop();
     }
   }
@@ -1022,11 +1037,11 @@ class _CostApprovalScreenState extends State<CostApprovalScreen> with _LiveBooki
     final b = booking;
     final q = b?.pendingQuotation;
     return Scaffold(
-      appBar: AppBar(title: const Text('Approve cost')),
+      appBar: AppBar(title: Text(context.l10n.approveCostTitle)),
       body: b == null
           ? Center(child: CircularProgressIndicator(color: AppColors.ink))
           : q == null
-          ? const EmptyState(icon: Icons.task_alt_rounded, title: 'Nothing to approve right now')
+          ? EmptyState(icon: Icons.task_alt_rounded, title: context.l10n.nothingToApprove)
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -1035,8 +1050,8 @@ class _CostApprovalScreenState extends State<CostApprovalScreen> with _LiveBooki
                   style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
-                Text('Total to approve', style: TextStyle(color: AppColors.inkSoft)),
-                Text(formatLkr(q.totalCents), style: Theme.of(context).textTheme.headlineMedium),
+                Text(context.l10n.totalToApprove, style: TextStyle(color: AppColors.inkSoft)),
+                Text(context.lkr(q.totalCents), style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 16),
                 if (q.note != null)
                   Card(
@@ -1052,7 +1067,7 @@ class _CostApprovalScreenState extends State<CostApprovalScreen> with _LiveBooki
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Note from ${b.technician!.firstName}',
+                                  context.l10n.noteFrom(b.technician!.firstName),
                                   style: const TextStyle(fontWeight: FontWeight.w700),
                                 ),
                                 const SizedBox(height: 4),
@@ -1079,7 +1094,7 @@ class _CostApprovalScreenState extends State<CostApprovalScreen> with _LiveBooki
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Work starts only after you approve. If the cost changes, you will be asked again.',
+                  context.l10n.workStartsAfterApprove,
                   style: TextStyle(color: AppColors.muted, height: 1.4),
                 ),
               ],
@@ -1090,14 +1105,14 @@ class _CostApprovalScreenState extends State<CostApprovalScreen> with _LiveBooki
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  BusyButton(label: 'Approve ${formatLkr(q.totalCents)}', onPressed: () => _decide(q, true)),
+                  BusyButton(label: context.l10n.approveAmount(context.lkr(q.totalCents)), onPressed: () => _decide(q, true)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () => context.push('/booking/${widget.id}/chat'),
-                          child: const Text('Ask a question'),
+                          child: Text(context.l10n.askQuestion),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -1105,7 +1120,7 @@ class _CostApprovalScreenState extends State<CostApprovalScreen> with _LiveBooki
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
                           onPressed: () => _decide(q, false),
-                          child: const Text('Decline'),
+                          child: Text(context.l10n.decline),
                         ),
                       ),
                     ],
@@ -1147,7 +1162,7 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
     final completedAt = b?.eventAt('COMPLETED');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Payment')),
+      appBar: AppBar(title: Text(context.l10n.payment)),
       body: b == null || payment == null
           ? Center(child: CircularProgressIndicator(color: AppColors.ink))
           : ListView(
@@ -1159,13 +1174,17 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Repair completed by ${b.technician?.firstName ?? 'your technician'}'
-                  '${completedAt == null ? '' : ' · ${formatTime(completedAt)}'}',
+                  completedAt == null
+                      ? context.l10n.repairCompletedBy(b.technician?.firstName ?? context.l10n.yourTechnician)
+                      : context.l10n.repairCompletedByAt(
+                          b.technician?.firstName ?? context.l10n.yourTechnician,
+                          context.time(completedAt),
+                        ),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 if (b.photos.any((p) => p.kind == 'AFTER'))
                   PhotoStrip(
-                    title: 'After photos',
+                    title: context.l10n.afterPhotos,
                     bookingId: b.id,
                     photos: b.photos.where((p) => p.kind == 'AFTER').toList(),
                   ),
@@ -1188,24 +1207,24 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
                           ),
                   ),
                 ),
-                const SectionTitle('Payment method'),
+                SectionTitle(context.l10n.paymentMethodHeading),
                 _MethodTile(
                   icon: Icons.payments_outlined,
-                  title: 'Cash',
-                  subtitle: 'Pay ${b.technician?.firstName ?? 'the technician'} directly',
+                  title: context.l10n.cash,
+                  subtitle: context.l10n.payTechDirectly(b.technician?.firstName ?? context.l10n.theTechnician),
                   selected: true,
                 ),
-                const _MethodTile(
+                _MethodTile(
                   icon: Icons.credit_card_rounded,
-                  title: 'Card',
-                  subtitle: 'Coming soon',
+                  title: context.l10n.card,
+                  subtitle: context.l10n.comingSoon,
                   selected: false,
                   disabled: true,
                 ),
-                const _MethodTile(
+                _MethodTile(
                   icon: Icons.qr_code_rounded,
-                  title: 'Mobile wallet',
-                  subtitle: 'Coming soon',
+                  title: context.l10n.mobileWallet,
+                  subtitle: context.l10n.comingSoon,
                   selected: false,
                   disabled: true,
                 ),
@@ -1224,8 +1243,10 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Hand ${formatLkr(payment.amountCents)} to ${b.technician?.firstName ?? 'the technician'}. '
-                            'Your receipt appears as soon as they confirm.',
+                            context.l10n.handCashTo(
+                              context.lkr(payment.amountCents),
+                              b.technician?.firstName ?? context.l10n.theTechnician,
+                            ),
                           ),
                         ),
                       ],
@@ -1238,7 +1259,7 @@ class _PaymentScreenState extends State<PaymentScreen> with _LiveBooking {
           ? null
           : BottomAction(
               child: BusyButton(
-                label: 'Confirm payment · ${formatLkr(payment.amountCents)}',
+                label: context.l10n.confirmPaymentAmount(context.lkr(payment.amountCents)),
                 onPressed: () async {
                   final updated = await context.repo.choosePayment(widget.id, 'CASH');
                   apply(updated);
@@ -1300,7 +1321,7 @@ class ReceiptScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Receipt'),
+        title: Text(context.l10n.receipt),
         leading: BackButton(onPressed: () => context.canPop() ? context.pop() : context.go('/home')),
       ),
       body: AsyncView(
@@ -1322,13 +1343,15 @@ class ReceiptScreen extends StatelessWidget {
                         child: const Icon(Icons.check_rounded, size: 38, color: AppColors.black),
                       ),
                       const SizedBox(height: 12),
-                      Text('Payment received', style: Theme.of(context).textTheme.headlineSmall),
+                      Text(context.l10n.paymentReceived, style: Theme.of(context).textTheme.headlineSmall),
                       const SizedBox(height: 4),
                       Text(
-                        '${formatLkr(payment.amountCents)} paid in ${payment.method.toLowerCase()}',
+                        payment.method == 'CASH'
+                            ? context.l10n.paidInCash(context.lkr(payment.amountCents))
+                            : context.l10n.paidIn(context.lkr(payment.amountCents), payment.method.toLowerCase()),
                         style: TextStyle(color: AppColors.inkSoft),
                       ),
-                      Text('Receipt #${b.reference}', style: TextStyle(color: AppColors.muted)),
+                      Text(context.l10n.receiptNumber(b.reference), style: TextStyle(color: AppColors.muted)),
                     ],
                   ),
                 ),
@@ -1348,7 +1371,7 @@ class ReceiptScreen extends StatelessWidget {
                                 children: [
                                   Text(tech.displayName, style: const TextStyle(fontWeight: FontWeight.w700)),
                                   Text(
-                                    '${b.categoryName}${payment.paidAt == null ? '' : ' · ${formatDay(payment.paidAt!)} · ${formatTime(payment.paidAt!)}'}',
+                                    '${context.categoryByName(b.categoryName)}${payment.paidAt == null ? '' : ' · ${context.day(payment.paidAt!)} · ${context.time(payment.paidAt!)}'}',
                                     style: TextStyle(color: AppColors.muted, fontSize: 13),
                                   ),
                                 ],
@@ -1363,7 +1386,7 @@ class ReceiptScreen extends StatelessWidget {
                                 labourCents: 0,
                                 partsCents: 0,
                                 totalCents: payment.amountCents,
-                                totalLabel: 'Total paid',
+                                totalLabel: context.l10n.totalPaid,
                               )
                             : CostLines(
                                 visitFeeCents: quotation.visitFeeCents,
@@ -1371,7 +1394,7 @@ class ReceiptScreen extends StatelessWidget {
                                 partsCents: quotation.partsCents,
                                 totalCents: payment.amountCents,
                                 items: quotation.items,
-                                totalLabel: 'Total paid',
+                                totalLabel: context.l10n.totalPaid,
                               ),
                       ],
                     ),
@@ -1381,15 +1404,15 @@ class ReceiptScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(color: AppColors.yellowSoft, borderRadius: BorderRadius.circular(16)),
-                  child: const Row(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.shield_outlined),
-                      SizedBox(width: 12),
+                      const Icon(Icons.shield_outlined),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          '7-day workmanship cover\nIf the same fault returns, we send someone back at no labour cost.',
-                          style: TextStyle(height: 1.4),
+                          '${context.l10n.warrantyTitle}\n${context.l10n.warrantyBody}',
+                          style: const TextStyle(height: 1.4),
                         ),
                       ),
                     ],
@@ -1397,9 +1420,9 @@ class ReceiptScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 TextButton.icon(
-                  onPressed: () => showNewTicketSheet(context, bookingId: b.id, subject: 'Problem with ${b.reference}'),
+                  onPressed: () => showNewTicketSheet(context, bookingId: b.id, subject: context.l10n.problemWithRef(b.reference)),
                   icon: const Icon(Icons.flag_outlined),
-                  label: const Text('Report a problem with this job'),
+                  label: Text(context.l10n.reportProblemWithJob),
                 ),
               ],
             ),
@@ -1407,7 +1430,7 @@ class ReceiptScreen extends StatelessWidget {
                 ? BottomAction(
                     child: OutlinedButton(
                       onPressed: () => context.go('/home'),
-                      child: Text('You rated ${tech.firstName} ${b.rating}★ · Done'),
+                      child: Text(context.l10n.youRated(tech.firstName, '${b.rating}')),
                     ),
                   )
                 : BottomAction(
@@ -1416,7 +1439,7 @@ class ReceiptScreen extends StatelessWidget {
                         await context.push('/booking/${b.id}/rate');
                         await reload();
                       },
-                      child: Text('Rate ${tech.firstName}'),
+                      child: Text(context.l10n.rateName(tech.firstName)),
                     ),
                   ),
           );
@@ -1438,15 +1461,6 @@ class RatingScreen extends StatefulWidget {
 }
 
 class _RatingScreenState extends State<RatingScreen> {
-  static const _tags = [
-    ('ON_TIME', 'On time'),
-    ('PROFESSIONAL', 'Professional'),
-    ('CLEAN_WORK', 'Clean work'),
-    ('FAIR_PRICE', 'Fair price'),
-    ('EXPLAINED_CLEARLY', 'Explained clearly'),
-  ];
-  static const _words = ['', 'Poor', 'Could be better', 'Good', 'Great', 'Excellent'];
-
   late final Future<BookingDetail> _booking = context.repo.booking(widget.id);
   int _rating = 0;
   final Set<String> _selected = {};
@@ -1460,10 +1474,19 @@ class _RatingScreenState extends State<RatingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
+    final tags = [
+      ('ON_TIME', l.tagOnTime),
+      ('PROFESSIONAL', l.tagProfessional),
+      ('CLEAN_WORK', l.tagCleanWork),
+      ('FAIR_PRICE', l.tagFairPrice),
+      ('EXPLAINED_CLEARLY', l.tagExplainedClearly),
+    ];
+    final words = ['', l.ratePoor, l.rateCouldBeBetter, l.rateGood, l.rateGreat, l.rateExcellent];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rate your experience'),
-        actions: [TextButton(onPressed: () => context.pop(), child: const Text('Skip'))],
+        title: Text(l.rateExperience),
+        actions: [TextButton(onPressed: () => context.pop(), child: Text(l.skip))],
       ),
       body: FutureBuilder<BookingDetail>(
         future: _booking,
@@ -1476,9 +1499,9 @@ class _RatingScreenState extends State<RatingScreen> {
             children: [
               Center(child: Avatar(name: tech.displayName, size: 72)),
               const SizedBox(height: 12),
-              Center(child: Text('How was ${tech.firstName}?', style: Theme.of(context).textTheme.headlineSmall)),
+              Center(child: Text(l.howWasName(tech.firstName), style: Theme.of(context).textTheme.headlineSmall)),
               Center(
-                child: Text('${b.categoryName} · ${b.title}', style: TextStyle(color: AppColors.muted)),
+                child: Text('${context.categoryByName(b.categoryName)} · ${context.problemName(b.title)}', style: TextStyle(color: AppColors.muted)),
               ),
               const SizedBox(height: 16),
               Row(
@@ -1496,14 +1519,14 @@ class _RatingScreenState extends State<RatingScreen> {
                 ],
               ),
               Center(
-                child: Text(_words[_rating], style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                child: Text(words[_rating], style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
               ),
-              const SectionTitle('What went well?'),
+              SectionTitle(l.whatWentWell),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  for (final (value, label) in _tags)
+                  for (final (value, label) in tags)
                     FilterChip(
                       label: Text(label),
                       selected: _selected.contains(value),
@@ -1511,14 +1534,14 @@ class _RatingScreenState extends State<RatingScreen> {
                     ),
                 ],
               ),
-              const SectionTitle('Add a comment (optional)'),
+              SectionTitle(l.addCommentOptional),
               TextField(
                 controller: _comment,
                 minLines: 3,
                 maxLines: 5,
                 maxLength: 500,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(hintText: 'Tell others about the job'),
+                decoration: InputDecoration(hintText: l.commentHint),
               ),
             ],
           );
@@ -1526,13 +1549,13 @@ class _RatingScreenState extends State<RatingScreen> {
       ),
       bottomNavigationBar: BottomAction(
         child: BusyButton(
-          label: 'Submit rating',
+          label: l.submitRating,
           onPressed: _rating == 0
               ? null
               : () async {
                   await context.repo.review(widget.id, _rating, _selected.toList(), _comment.text);
                   if (mounted) {
-                    context.toast('Thank you for your rating!');
+                    context.toast(context.l10n.thankYouRating);
                     context.pop();
                   }
                 },

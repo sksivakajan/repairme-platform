@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../core/format.dart';
 import '../data/models.dart';
+import '../l10n/catalog_text.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 
@@ -13,7 +15,7 @@ class MessagesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Messages')),
+      appBar: AppBar(title: Text(context.l10n.navMessages)),
       body: AsyncView(
         load: context.repo.conversations,
         builder: (context, conversations, reload) => RefreshIndicator(
@@ -24,10 +26,10 @@ class MessagesScreen extends StatelessWidget {
             itemCount: conversations.isEmpty ? 1 : conversations.length,
             separatorBuilder: (_, _) => const Divider(indent: 84, endIndent: 20),
             itemBuilder: (context, i) => conversations.isEmpty
-                ? const EmptyState(
+                ? EmptyState(
                     icon: Icons.chat_bubble_outline_rounded,
-                    title: 'No messages yet',
-                    message: 'When a technician accepts your booking, you can chat with them here.',
+                    title: context.l10n.noMessagesYet,
+                    message: context.l10n.noMessagesHint,
                   )
                 : _ConversationTile(conversation: conversations[i], onReturn: reload),
           ),
@@ -48,9 +50,11 @@ class _ConversationTile extends StatelessWidget {
     final c = conversation;
     final firstName = c.technicianName.split(' ').first;
     final last = c.lastMessage;
-    final preview = last == null ? 'Say hello to $firstName' : (last.mine ? 'You: ${last.body}' : last.body);
+    final preview = last == null
+        ? context.l10n.sayHelloTo(firstName)
+        : (last.mine ? context.l10n.youPrefix(last.body) : last.body);
     final unread = c.unreadCount > 0;
-    final when = formatDay(c.lastActivityAt) == 'Today' ? formatTime(c.lastActivityAt) : formatDay(c.lastActivityAt);
+    final when = isToday(c.lastActivityAt) ? context.time(c.lastActivityAt) : context.day(c.lastActivityAt);
 
     return InkWell(
       onTap: () async {
@@ -137,7 +141,7 @@ class _ConversationTile extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text('${c.title} · ${c.reference}', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                  Text('${context.problemName(c.title)} · ${c.reference}', style: TextStyle(fontSize: 12, color: AppColors.muted)),
                 ],
               ),
             ),

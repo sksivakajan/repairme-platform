@@ -7,6 +7,9 @@ import 'package:go_router/go_router.dart';
 import '../core/format.dart';
 import '../data/booking_draft.dart';
 import '../data/models.dart';
+import '../l10n/catalog_text.dart';
+import '../l10n/l10n.dart';
+import '../l10n/trade_text.dart';
 import '../theme/app_theme.dart';
 import '../widgets/brand.dart';
 import '../widgets/common.dart';
@@ -22,11 +25,11 @@ class _HomeData {
   final List<TopTechnician> technicians;
 }
 
-String _greeting() {
+String _greeting(BuildContext context) {
   final hour = DateTime.now().hour;
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 12) return context.l10n.greetMorning;
+  if (hour < 17) return context.l10n.greetAfternoon;
+  return context.l10n.greetEvening;
 }
 
 /// C05 · Home.
@@ -78,20 +81,20 @@ class HomeScreen extends StatelessWidget {
                   ],
                   const SizedBox(height: 18),
                   _PromoCarousel(onlineTechnicians: data.catalog.onlineTechnicians),
-                  _SectionHeader(title: 'Services', action: 'See all', onAction: () => context.push('/services')),
+                  _SectionHeader(title: context.l10n.services, action: context.l10n.seeAll, onAction: () => context.push('/services')),
                   GridView.count(
                     crossAxisCount: 3,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: 0.98,
+                    childAspectRatio: 0.88,
                     children: [for (final category in popular) _ServiceTile(category: category)],
                   ),
                   if (data.technicians.isNotEmpty) ...[
                     _SectionHeader(
-                      title: 'Top rated technicians',
-                      action: 'View all',
+                      title: context.l10n.topRatedTechnicians,
+                      action: context.l10n.viewAll,
                       onAction: () => context.push('/technicians'),
                     ),
                     SizedBox(
@@ -127,10 +130,10 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = profile.firstName.isEmpty ? 'Welcome' : profile.firstName;
+    final name = profile.firstName.isEmpty ? context.l10n.welcome : profile.firstName;
     final address = addresses.where((a) => a.isDefault).firstOrNull ?? addresses.firstOrNull;
     final place = address == null
-        ? 'Add your address'
+        ? context.l10n.addYourAddress
         : (address.address.area.isNotEmpty ? address.address.area : address.address.city);
 
     return Row(
@@ -140,7 +143,7 @@ class _Header extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${_greeting()},', style: TextStyle(color: AppColors.muted, fontSize: 14)),
+              Text('${_greeting(context)},', style: TextStyle(color: AppColors.muted, fontSize: 14)),
               Text(
                 name,
                 maxLines: 1,
@@ -187,7 +190,7 @@ class _Header extends StatelessWidget {
         const SizedBox(width: 10),
         Semantics(
           button: true,
-          label: 'Profile',
+          label: context.l10n.navProfile,
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: () => context.go('/profile'),
@@ -227,7 +230,7 @@ class _BellButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: unread > 0 ? 'Notifications, $unread unread' : 'Notifications',
+      label: unread > 0 ? context.l10n.notificationsUnread('$unread') : context.l10n.notifications,
       child: Material(
         color: AppColors.surface,
         shape: RoundedRectangleBorder(
@@ -285,10 +288,10 @@ class _SearchBar extends StatelessWidget {
           height: 54,
           child: Row(
             children: [
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Icon(Icons.search_rounded, color: AppColors.muted),
-              SizedBox(width: 10),
-              Text('Search for a service...', style: TextStyle(color: AppColors.muted, fontSize: 14)),
+              const SizedBox(width: 10),
+              Text(context.l10n.searchService, style: TextStyle(color: AppColors.muted, fontSize: 14)),
             ],
           ),
         ),
@@ -313,19 +316,34 @@ class _PromoCarouselState extends State<_PromoCarousel> {
 
   List<Widget> _slides(BuildContext context) => [
         const _TeamBanner(),
-        _ImageBanner(
-          asset: 'assets/images/banner_need_help.jpg',
-          label: 'Need help right now? Get emergency help',
-          onTap: () => HomeScreen.startRequest(context, BookingType.emergency),
-        ),
-        _ImageBanner(
-          asset: 'assets/images/banner_home_repairs.jpg',
-          label: 'Home repairs made simple. Book a technician now',
+        _OfferBanner(
+          tag: context.l10n.offerNewTag,
+          title: context.l10n.offerNewTitle,
+          subtitle: context.l10n.offerNewSub,
+          code: 'WELCOME20',
+          cta: context.l10n.bookNow,
+          icon: Icons.local_offer_rounded,
+          colors: const [Color(0xFF1A1A1A), Color(0xFF3A3220)],
           onTap: () => context.push('/services'),
         ),
-        _ImageBanner(
-          asset: 'assets/images/banner_roadside.jpg',
-          label: 'Stranded on the road? Get help now',
+        _OfferBanner(
+          tag: context.l10n.offerHomeTag,
+          title: context.l10n.offerHomeTitle,
+          subtitle: context.l10n.offerHomeSub,
+          cta: context.l10n.bookTechnician,
+          icon: Icons.home_repair_service_rounded,
+          colors: const [Color(0xFFFFCB2F), Color(0xFFFFB703)],
+          darkText: true,
+          onTap: () => context.push('/services'),
+        ),
+        _OfferBanner(
+          tag: context.l10n.offerRoadTag,
+          title: context.l10n.offerRoadTitle,
+          subtitle: context.l10n.offerRoadSub,
+          code: 'ROAD500',
+          cta: context.l10n.getHelpNow,
+          icon: Icons.directions_car_rounded,
+          colors: const [Color(0xFF2B2B2B), Color(0xFF111111)],
           onTap: () => HomeScreen.startRequest(context, BookingType.emergency),
         ),
         _EmergencyBanner(onlineTechnicians: widget.onlineTechnicians),
@@ -387,40 +405,82 @@ class _PromoCarouselState extends State<_PromoCarousel> {
   }
 }
 
-/// A banner made from artwork (designed at about 2.15 : 1, so it fills the slot).
-class _ImageBanner extends StatelessWidget {
-  const _ImageBanner({required this.asset, required this.label, this.onTap});
+/// A promotion / offer banner drawn with widgets (real text, no baked-in artwork).
+class _OfferBanner extends StatelessWidget {
+  const _OfferBanner({
+    required this.tag,
+    required this.title,
+    required this.subtitle,
+    required this.cta,
+    required this.icon,
+    required this.colors,
+    required this.onTap,
+    this.code,
+    this.darkText = false,
+  });
 
-  final String asset;
-  final String label;
-  final VoidCallback? onTap;
+  final String tag;
+  final String title;
+  final String subtitle;
+  final String cta;
+  final String? code;
+  final IconData icon;
+  final List<Color> colors;
+  final bool darkText;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final fg = darkText ? AppColors.black : Colors.white;
+    final sub = darkText ? const Color(0xFF3D3D3A) : const Color(0xFFCFCCC4);
+    final accent = darkText ? AppColors.black : AppColors.yellow;
     return Semantics(
-      label: label,
-      button: onTap != null,
+      label: '$title. $subtitle${code != null ? '. ${context.l10n.useCode(code!)}' : ''}',
+      button: true,
       excludeSemantics: true,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: colors),
+        ),
         child: Stack(
-          fit: StackFit.expand,
           children: [
-            Image.asset(asset, fit: BoxFit.cover, filterQuality: FilterQuality.medium),
-            // Same dark fade from the left as the team banner.
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withValues(alpha: 0.55),
-                    Colors.black.withValues(alpha: 0.25),
-                    Colors.black.withValues(alpha: 0),
-                  ],
-                  stops: const [0, 0.4, 0.75],
-                ),
+            Positioned(right: -40, bottom: -60, child: _circle(190, accent.withValues(alpha: 0.14))),
+            Positioned(right: 18, top: 0, bottom: 0, child: Center(child: Icon(icon, size: 70, color: accent.withValues(alpha: 0.9)))),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 110, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Pill(label: tag, background: accent, foreground: darkText ? AppColors.yellow : AppColors.black),
+                  const SizedBox(height: 8),
+                  Text(title, style: TextStyle(color: fg, fontSize: 26, fontWeight: FontWeight.w800, height: 1.1)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: TextStyle(color: sub, fontSize: 12.5)),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      if (code != null) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: accent.withValues(alpha: 0.7)),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(code!, style: TextStyle(color: accent, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(cta, style: TextStyle(color: fg, fontSize: 12.5, fontWeight: FontWeight.w600)),
+                      const SizedBox(width: 2),
+                      Icon(Icons.chevron_right_rounded, size: 18, color: fg),
+                    ],
+                  ),
+                ],
               ),
             ),
-            if (onTap != null) Material(color: Colors.transparent, child: InkWell(onTap: onTap)),
+            Positioned.fill(child: Material(color: Colors.transparent, child: InkWell(onTap: onTap))),
           ],
         ),
       ),
@@ -457,24 +517,22 @@ class _TeamBanner extends StatelessWidget {
               ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(18, 20, 18, 16),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Built in Sri Lanka,',
-                    style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700, height: 1.2)),
-                Text('for every',
-                    style: TextStyle(color: AppColors.yellow, fontSize: 19, fontWeight: FontWeight.w700, height: 1.2)),
-                Text('Sri Lankan',
-                    style: TextStyle(color: AppColors.yellow, fontSize: 19, fontWeight: FontWeight.w700, height: 1.2)),
-                Spacer(),
+                Text(context.l10n.teamLine1,
+                    style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700, height: 1.2)),
+                Text(context.l10n.teamLine2,
+                    style: const TextStyle(color: AppColors.yellow, fontSize: 19, fontWeight: FontWeight.w700, height: 1.2)),
+                const Spacer(),
                 Row(
                   children: [
-                    Text('🇱🇰', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 6),
-                    Text('Meet the team',
-                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                    const Text('🇱🇰', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(context.l10n.meetTheTeam,
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ],
@@ -511,32 +569,32 @@ class _BrandBanner extends StatelessWidget {
         children: [
           Positioned(right: -40, bottom: -70, child: _circle(200, AppColors.yellow.withValues(alpha: 0.14))),
           const Positioned(right: 20, top: 20, child: RepairMeLogo(size: 88, palette: LogoPalette.onDark)),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(18, 18, 18, 16),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Built in Sri Lanka,',
-                  style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700, height: 1.25),
+                  context.l10n.teamLine1,
+                  style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700, height: 1.25),
                 ),
                 Text(
-                  'for every Sri Lankan',
-                  style: TextStyle(color: AppColors.yellow, fontSize: 19, fontWeight: FontWeight.w700, height: 1.25),
+                  context.l10n.teamLine2,
+                  style: const TextStyle(color: AppColors.yellow, fontSize: 19, fontWeight: FontWeight.w700, height: 1.25),
                 ),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text(
-                  'Verified expertise. Trusted integrity.',
-                  style: TextStyle(color: Color(0xFFCFCCC4), fontSize: 11.5),
+                  context.l10n.brandTagline,
+                  style: const TextStyle(color: Color(0xFFCFCCC4), fontSize: 11.5),
                 ),
-                Spacer(),
+                const Spacer(),
                 Row(
                   children: [
-                    _TrustChip(icon: Icons.verified_rounded, label: 'Verified'),
-                    SizedBox(width: 6),
-                    _TrustChip(icon: Icons.bolt_rounded, label: 'Fast'),
-                    SizedBox(width: 6),
-                    _TrustChip(icon: Icons.star_rounded, label: 'Trusted'),
+                    _TrustChip(icon: Icons.verified_rounded, label: context.l10n.chipVerified),
+                    const SizedBox(width: 6),
+                    _TrustChip(icon: Icons.bolt_rounded, label: context.l10n.chipFast),
+                    const SizedBox(width: 6),
+                    _TrustChip(icon: Icons.star_rounded, label: context.l10n.chipTrusted),
                   ],
                 ),
               ],
@@ -613,16 +671,16 @@ class _EmergencyBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Pill(label: 'EMERGENCY', background: AppColors.black, foreground: AppColors.yellow),
+                  Pill(label: context.l10n.emergencyTag, background: AppColors.black, foreground: AppColors.yellow),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Need help right now?',
+                  Text(
+                    context.l10n.needHelpNow,
                     style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, height: 1.2),
                   ),
                   Text(
                     onlineTechnicians > 0
-                        ? '$onlineTechnicians technicians online · avg. 18 min'
-                        : 'Verified technicians, 24 hours a day',
+                        ? context.l10n.techniciansOnline(onlineTechnicians)
+                        : context.l10n.verifiedTechniciansAllDay,
                     style: const TextStyle(fontSize: 12.5, color: Color(0xFF3D3D3A)),
                   ),
                   const Spacer(),
@@ -633,14 +691,15 @@ class _EmergencyBanner extends StatelessWidget {
                       minimumSize: const Size(0, 38),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      textStyle: const TextStyle(
+                      textStyle: TextStyle(
                         fontFamily: AppFonts.family,
+                        fontFamilyFallback: AppFonts.fallback,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     onPressed: () => HomeScreen.startRequest(context, BookingType.emergency),
-                    child: const Text('Get help now'),
+                    child: Text(context.l10n.getHelpNow),
                   ),
                 ],
               ),
@@ -711,14 +770,14 @@ class _ServiceTile extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _ServiceArt(iconKey: category.iconKey),
+                ServiceArt(iconKey: category.iconKey),
                 const SizedBox(height: 8),
                 // Room for two lines on every tile keeps the icons aligned.
                 SizedBox(
-                  height: 32,
+                  height: 38,
                   child: Center(
                     child: Text(
-                      category.name,
+                      context.categoryName(category.slug, category.name),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -743,7 +802,7 @@ class _TechnicianCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '${technician.firstName}, ${technician.trade}, rated ${technician.rating.toStringAsFixed(1)}',
+      label: context.l10n.technicianRated(technician.firstName, context.tradeOf(technician), technician.rating.toStringAsFixed(1)),
       excludeSemantics: true,
       child: Container(
         width: 118,
@@ -793,7 +852,7 @@ class _TechnicianCard extends StatelessWidget {
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             Text(
-              technician.trade,
+              context.tradeOf(technician),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 11.5, color: AppColors.muted),
@@ -824,7 +883,7 @@ class TopTechniciansScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Top rated technicians')),
+      appBar: AppBar(title: Text(context.l10n.topRatedTechnicians)),
       body: AsyncView(
         load: context.repo.topTechnicians,
         builder: (context, technicians, reload) => RefreshIndicator(
@@ -836,21 +895,21 @@ class TopTechniciansScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: AppColors.yellowSoft, borderRadius: BorderRadius.circular(14)),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.info_outline_rounded, size: 20),
-                    SizedBox(width: 10),
+                    const Icon(Icons.info_outline_rounded, size: 20),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'When you book, we match you with the nearest available verified technician.',
-                        style: TextStyle(fontSize: 13, height: 1.4),
+                        context.l10n.topTechInfo,
+                        style: const TextStyle(fontSize: 13, height: 1.4),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 14),
-              if (technicians.isEmpty) const EmptyState(icon: Icons.star_outline_rounded, title: 'No ratings yet'),
+              if (technicians.isEmpty) EmptyState(icon: Icons.star_outline_rounded, title: context.l10n.noRatingsYet),
               for (final technician in technicians)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -872,7 +931,7 @@ class TopTechniciansScreen extends StatelessWidget {
                           Icon(Icons.verified_rounded, size: 16, color: AppColors.success),
                         ],
                       ),
-                      subtitle: Text('${technician.trade} · ${technician.jobsCompleted} jobs'),
+                      subtitle: Text(context.l10n.tradeAndJobs(context.tradeOf(technician), technician.jobsCompleted)),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -896,21 +955,22 @@ class TopTechniciansScreen extends StatelessWidget {
 }
 
 /// 3D illustration for the main services; other services use [PremiumIcon].
-class _ServiceArt extends StatelessWidget {
-  const _ServiceArt({required this.iconKey});
+class ServiceArt extends StatelessWidget {
+  const ServiceArt({super.key, required this.iconKey, this.size = 66});
 
   final String iconKey;
+  final double size;
 
   static const _illustrated = {'electrical', 'plumbing', 'ac', 'washing-machine', 'mechanic', 'general'};
 
   @override
   Widget build(BuildContext context) {
-    if (!_illustrated.contains(iconKey)) return PremiumIcon(icon: categoryIcon(iconKey));
+    if (!_illustrated.contains(iconKey)) return PremiumIcon(icon: categoryIcon(iconKey), size: size * 0.79);
     // Transparent artwork, so it sits on the card in light and dark mode.
     return Image.asset(
       'assets/images/services/$iconKey.png',
-      width: 66,
-      height: 66,
+      width: size,
+      height: size,
       filterQuality: FilterQuality.medium,
     );
   }

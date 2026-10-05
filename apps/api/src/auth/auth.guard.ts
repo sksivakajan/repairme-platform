@@ -51,7 +51,12 @@ export class AuthGuard implements CanActivate {
     }
     if (scheme === 'Dev' && this.config.authDevBypass) {
       return E164_PHONE.test(credential)
-        ? { firebaseUid: `dev:${credential}`, phoneNumber: credential }
+        ? {
+            firebaseUid: `dev:${credential}`,
+            phoneNumber: credential,
+            // Dev login has no OTP to be "recent"; treat each request as just verified.
+            authTime: Math.floor(Date.now() / 1000),
+          }
         : null;
     }
     return null;

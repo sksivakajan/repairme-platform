@@ -6,6 +6,7 @@ import { CatalogModule } from './catalog/catalog.module.js';
 import { ConfigModule } from './config/config.module.js';
 import { PrismaModule } from './database/prisma.module.js';
 import { DevModule } from './dev/dev.module.js';
+import { LegalModule } from './legal/legal.module.js';
 import { HealthModule } from './health/health.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { ProfileModule } from './profile/profile.module.js';
@@ -19,6 +20,7 @@ import { SupportModule } from './support/support.module.js';
     NotificationsModule,
     HealthModule,
     CatalogModule,
+    LegalModule,
     ProfileModule,
     AddressesModule,
     BookingsModule,

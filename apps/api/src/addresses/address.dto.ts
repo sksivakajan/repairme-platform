@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   Length,
+  Matches,
 } from 'class-validator';
 import { AddressLabel } from '../generated/prisma/client.js';
 
@@ -32,6 +33,27 @@ export class AddressInputDto {
   @IsString()
   @Length(1, 160)
   landmark?: string;
+
+  /** Who to ask for on arrival, when it is not the customer. */
+  @IsOptional()
+  @IsString()
+  @Length(2, 80)
+  contactName?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\+?[0-9 ]{7,16}$/, { message: 'Enter a valid phone number' })
+  contactPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 60)
+  district?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 200)
+  instructions?: string;
 
   @IsOptional()
   @IsLatitude()

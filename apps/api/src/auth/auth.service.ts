@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../database/prisma.service.js';
 import type { AuthUser, VerifiedIdentity } from './auth-user.js';
@@ -22,7 +22,20 @@ export class AuthService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        return this.upsertUser(identity);
+        try {
+          return await this.upsertUser(identity);
+        } catch (retryError) {
+          // Still a clash: the verified number belongs to a different account.
+          if (
+            retryError instanceof Prisma.PrismaClientKnownRequestError &&
+            retryError.code === 'P2002'
+          ) {
+            throw new ConflictException(
+              'This mobile number is already associated with another account',
+            );
+          }
+          throw retryError;
+        }
       }
       throw error;
     }
@@ -54,6 +67,7 @@ export class AuthService {
       role: user.role,
       phoneNumber: user.phoneNumber,
       customerId: user.customer?.id ?? null,
+      authTime: identity.authTime,
     };
   }
 }

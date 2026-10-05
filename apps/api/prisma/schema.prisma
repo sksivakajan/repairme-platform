@@ -32,15 +32,59 @@ enum Language {
   @@map("language")
 }
 
+enum Gender {
+  MALE
+  FEMALE
+  PREFER_NOT_TO_SAY
+
+  @@map("gender")
+}
+
+enum MembershipType {
+  STANDARD
+
+  @@map("membership_type")
+}
+
+enum AccountStatus {
+  ACTIVE
+  DELETED
+
+  @@map("account_status")
+}
+
 model User {
-  id          String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  role        UserRole @default(CUSTOMER)
-  firebaseUid String?  @unique @map("firebase_uid")
-  phoneNumber String?  @unique @map("phone_number")
-  fullName    String?  @map("full_name")
-  language    Language @default(EN)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                     String         @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  role                   UserRole       @default(CUSTOMER)
+  firebaseUid            String?        @unique @map("firebase_uid")
+  phoneNumber            String?        @unique @map("phone_number")
+  /// "First Last", kept in step with firstName / lastName for code that shows one name.
+  fullName               String?        @map("full_name")
+  firstName              String?        @map("first_name")
+  lastName               String?        @map("last_name")
+  email                  String?
+  birthday               DateTime?      @db.Date
+  gender                 Gender?
+  /// Storage key of the profile photo (see PhotosService for the same approach).
+  profilePhotoKey        String?        @map("profile_photo_key")
+  language               Language       @default(EN)
+  membershipType         MembershipType @default(STANDARD) @map("membership_type")
+  accountStatus          AccountStatus  @default(ACTIVE) @map("account_status")
+  /// Set when the customer finished "Complete your profile": the account exists from then on.
+  profileCompletedAt     DateTime?      @map("profile_completed_at") @db.Timestamptz(3)
+  deletedAt              DateTime?      @map("deleted_at") @db.Timestamptz(3)
+  // Notification choices. Essential account, security and booking-safety
+  // messages are always sent, whatever these are set to.
+  notifyBookingUpdates   Boolean        @default(true) @map("notify_booking_updates")
+  notifyServiceReminders Boolean        @default(true) @map("notify_service_reminders")
+  notifyPaymentUpdates   Boolean        @default(true) @map("notify_payment_updates")
+  notifyOffers           Boolean        @default(false) @map("notify_offers")
+  notifyRepairmeUpdates  Boolean        @default(true) @map("notify_repairme_updates")
+  createdAt              DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  emergencyContacts EmergencyContact[]
+  legalAcceptances  LegalAcceptance[]
 
   customer      Customer?
   technician    Technician?
@@ -50,6 +94,45 @@ model User {
   bookingEvents BookingEvent[]
 
   @@map("users")
+}
+
+model EmergencyContact {
+  id           String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  name         String
+  relationship String
+  phoneNumber  String   @map("phone_number")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("emergency_contacts")
+}
+
+/// Which version of each legal document a customer accepted, and when.
+model LegalAcceptance {
+  id              String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  documentType    String   @map("document_type")
+  documentVersion String   @map("document_version")
+  acceptedAt      DateTime @default(now()) @map("accepted_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, documentType, documentVersion])
+  @@map("legal_acceptances")
+}
+
+/// Why customers leave. Not linked to the user, so it survives the anonymised account.
+model AccountDeletionFeedback {
+  id          String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  reason      String
+  details     String?
+  requestedAt DateTime @default(now()) @map("requested_at") @db.Timestamptz(3)
+
+  @@map("account_deletion_feedback")
 }
 
 model Customer {
@@ -159,19 +242,23 @@ enum AddressLabel {
 }
 
 model Address {
-  id          String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  customerId  String       @map("customer_id") @db.Uuid
-  label       AddressLabel @default(HOME)
-  line1       String
-  area        String
-  city        String
-  houseNumber String?      @map("house_number")
-  landmark    String?
-  latitude    Decimal?     @db.Decimal(9, 6)
-  longitude   Decimal?     @db.Decimal(9, 6)
-  isDefault   Boolean      @default(false) @map("is_default")
-  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id           String       @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  customerId   String       @map("customer_id") @db.Uuid
+  label        AddressLabel @default(HOME)
+  line1        String
+  area         String
+  city         String
+  houseNumber  String?      @map("house_number")
+  landmark     String?
+  contactName  String?      @map("contact_name")
+  contactPhone String?      @map("contact_phone")
+  district     String?
+  instructions String?
+  latitude     Decimal?     @db.Decimal(9, 6)
+  longitude    Decimal?     @db.Decimal(9, 6)
+  isDefault    Boolean      @default(false) @map("is_default")
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   customer Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   bookings Booking[]

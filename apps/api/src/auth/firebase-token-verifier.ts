@@ -34,6 +34,7 @@ export class FirebaseTokenVerifier {
       return {
         firebaseUid: decoded.uid,
         phoneNumber: decoded.phone_number ?? null,
+        authTime: decoded.auth_time ?? null,
       };
     } catch (error) {
       this.logger.debug(`Rejected Firebase ID token: ${String(error)}`);

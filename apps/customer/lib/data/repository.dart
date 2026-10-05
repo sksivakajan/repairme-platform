@@ -10,11 +10,53 @@ class Repository {
 
   final ApiClient api;
 
-  Future<Catalog> catalog() async =>
-      Catalog.fromJson(await api.get('/service-categories') as Map<String, dynamic>);
+  // Things that barely change are kept for a couple of minutes, so moving around
+  // the app (and coming back to Home) doesn't ask the server again every time.
+  final _cache = <String, ({DateTime at, Future<Object?> value})>{};
 
-  Future<Profile> profile() async =>
-      Profile.fromJson(await api.get('/me') as Map<String, dynamic>);
+  Future<T> _cached<T>(String key, Duration ttl, Future<T> Function() load) {
+    final hit = _cache[key];
+    if (hit != null && DateTime.now().difference(hit.at) < ttl) return hit.value as Future<T>;
+    final future = load();
+    _cache[key] = (at: DateTime.now(), value: future);
+    // A failed request must not be remembered.
+    future.then<void>((_) {}, onError: (Object _) {
+      if (identical(_cache[key]?.value, future)) _cache.remove(key);
+    });
+    return future;
+  }
+
+  /// Forget cached answers (after signing out, for example).
+  void clearCache() {
+    _cache.clear();
+    _primedProfile = null;
+  }
+
+  Profile? _primedProfile;
+  DateTime? _primedAt;
+
+  /// Hands over the profile fetched while the app was starting, so Home can use it
+  /// straight away instead of asking again. It is used once, and only if fresh.
+  void primeProfile(Profile profile) {
+    _primedProfile = profile;
+    _primedAt = DateTime.now();
+  }
+
+  Future<Catalog> catalog() => _cached(
+        'catalog',
+        const Duration(minutes: 2),
+        () async => Catalog.fromJson(await api.get('/service-categories') as Map<String, dynamic>),
+      );
+
+  Future<Profile> profile() async {
+    final primed = _primedProfile;
+    final at = _primedAt;
+    _primedProfile = null;
+    if (primed != null && at != null && DateTime.now().difference(at) < const Duration(seconds: 10)) {
+      return primed;
+    }
+    return Profile.fromJson(await api.get('/me') as Map<String, dynamic>);
+  }
 
   /// Only the fields you pass change. An empty email or birthday clears it.
   Future<Profile> updateProfile({
@@ -173,10 +215,13 @@ class Repository {
         'bookingId': ?bookingId,
       });
 
-  Future<List<TopTechnician>> topTechnicians() async =>
-      (await api.get('/technicians/top-rated') as List)
-          .map((e) => TopTechnician.fromJson(e as Map<String, dynamic>))
-          .toList();
+  Future<List<TopTechnician>> topTechnicians() => _cached(
+        'topTechnicians',
+        const Duration(minutes: 2),
+        () async => (await api.get('/technicians/top-rated') as List)
+            .map((e) => TopTechnician.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
 
   Future<List<Conversation>> conversations() async =>
       (await api.get('/conversations') as List)

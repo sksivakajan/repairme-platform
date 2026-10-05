@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 class AppFonts {
@@ -152,6 +153,13 @@ ThemeData buildTheme(Brightness brightness) {
   );
 
   return base.copyWith(
+    // Every page slides and fades in smoothly instead of snapping.
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: const FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.iOS: const CupertinoPageTransitionsBuilder(),
+      },
+    ),
     scaffoldBackgroundColor: AppColors.background,
     textTheme: text.copyWith(
       headlineMedium: text.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: AppFonts.indic ? 0 : -0.6),

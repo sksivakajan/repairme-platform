@@ -25,7 +25,10 @@ Future<void> confirmLogout(BuildContext context) async {
       title: Text(dialogContext.l10n.logOutQ),
       content: Text(dialogContext.l10n.logOutConfirm),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: Text(dialogContext.l10n.cancel)),
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: Text(dialogContext.l10n.cancel),
+        ),
         TextButton(
           style: TextButton.styleFrom(foregroundColor: AppColors.danger),
           onPressed: () => Navigator.pop(dialogContext, true),
@@ -38,8 +41,13 @@ Future<void> confirmLogout(BuildContext context) async {
 }
 
 String displayName(BuildContext context, Profile profile) {
-  final name = [profile.firstName, profile.lastName].where((p) => p.isNotEmpty).join(' ');
-  return name.isNotEmpty ? name : (profile.fullName ?? context.l10n.addYourName);
+  final name = [
+    profile.firstName,
+    profile.lastName,
+  ].where((p) => p.isNotEmpty).join(' ');
+  return name.isNotEmpty
+      ? name
+      : (profile.fullName ?? context.l10n.addYourName);
 }
 
 /// C25 · Profile.
@@ -110,13 +118,20 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.danger,
+              ),
               onPressed: () => confirmLogout(context),
               icon: const Icon(Icons.logout_rounded),
               label: Text(l.logOut),
             ),
             const SizedBox(height: 28),
-            Center(child: Text(l.followUs, style: Theme.of(context).textTheme.titleMedium)),
+            Center(
+              child: Text(
+                l.followUs,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
             const SizedBox(height: 12),
             const SocialLinks(),
             const BrandFooter(),
@@ -156,7 +171,10 @@ class _ProfileCard extends StatelessWidget {
                           displayName(context, profile),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Row(
@@ -169,7 +187,11 @@ class _ProfileCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Icon(Icons.verified_rounded, size: 16, color: AppColors.success),
+                            Icon(
+                              Icons.verified_rounded,
+                              size: 16,
+                              color: AppColors.success,
+                            ),
                           ],
                         ),
                       ],
@@ -180,7 +202,12 @@ class _ProfileCard extends StatelessWidget {
               const Divider(height: 24),
               Row(
                 children: [
-                  Expanded(child: Text(l.viewEditProfile, style: const TextStyle(fontWeight: FontWeight.w700))),
+                  Expanded(
+                    child: Text(
+                      l.viewEditProfile,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
                   const Icon(Icons.chevron_right_rounded),
                 ],
               ),
@@ -202,7 +229,8 @@ class PersonalInformationScreen extends StatelessWidget {
       appBar: AppBar(title: Text(context.l10n.personalInformation)),
       body: AsyncView<Profile>(
         load: context.repo.profile,
-        builder: (context, profile, reload) => _PersonalForm(profile: profile, reload: reload),
+        builder: (context, profile, reload) =>
+            _PersonalForm(profile: profile, reload: reload),
       ),
     );
   }
@@ -255,8 +283,14 @@ class _PersonalFormState extends State<_PersonalForm> {
             ),
             if (widget.profile.hasPhoto)
               ListTile(
-                leading: Icon(Icons.delete_outline_rounded, color: AppColors.danger),
-                title: Text(l.removePhoto, style: TextStyle(color: AppColors.danger)),
+                leading: Icon(
+                  Icons.delete_outline_rounded,
+                  color: AppColors.danger,
+                ),
+                title: Text(
+                  l.removePhoto,
+                  style: TextStyle(color: AppColors.danger),
+                ),
                 onTap: () => Navigator.pop(sheetContext, 'remove'),
               ),
           ],
@@ -279,7 +313,8 @@ class _PersonalFormState extends State<_PersonalForm> {
       }
       await widget.reload();
     } catch (error) {
-      if (mounted) context.showError(error is ApiException ? error : l.profileUpdateError);
+      if (mounted)
+        context.showError(error is ApiException ? error : l.profileUpdateError);
     }
   }
 
@@ -308,14 +343,19 @@ class _PersonalFormState extends State<_PersonalForm> {
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(sheetContext.l10n.chooseLanguage, style: Theme.of(sheetContext).textTheme.titleLarge),
+                child: Text(
+                  sheetContext.l10n.chooseLanguage,
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                ),
               ),
             ),
             for (final entry in AppLanguage.names.entries)
               ListTile(
                 title: Text(entry.value),
                 trailing: Icon(
-                  language.code == entry.key ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                  language.code == entry.key
+                      ? Icons.radio_button_checked_rounded
+                      : Icons.radio_button_off_rounded,
                 ),
                 onTap: () => Navigator.pop(sheetContext, entry.key),
               ),
@@ -347,11 +387,15 @@ class _PersonalFormState extends State<_PersonalForm> {
         firstName: first,
         lastName: last,
         email: email,
-        birthday: _birthday == null ? null : DateFormat('yyyy-MM-dd').format(_birthday!),
+        birthday: _birthday == null
+            ? null
+            : DateFormat('yyyy-MM-dd').format(_birthday!),
         gender: _gender,
       );
     } on ApiException catch (error) {
-      throw UserMessage(error.statusCode == 0 ? l.networkError : l.profileUpdateError);
+      throw UserMessage(
+        error.statusCode == 0 ? l.networkError : l.profileUpdateError,
+      );
     }
     if (!mounted) return;
     context.toast(l.changesSaved);
@@ -375,14 +419,21 @@ class _PersonalFormState extends State<_PersonalForm> {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
         Center(child: ProfileAvatar(profile: widget.profile, size: 96)),
-        Center(child: TextButton(onPressed: _changePhoto, child: Text(l.changeProfilePhoto))),
+        Center(
+          child: TextButton(
+            onPressed: _changePhoto,
+            child: Text(l.changeProfilePhoto),
+          ),
+        ),
         SectionTitle(l.personalDetails),
         TextField(
           controller: _first,
           textCapitalization: TextCapitalization.words,
           decoration: InputDecoration(
             labelText: l.firstName,
-            errorText: _submitted && _first.text.trim().isEmpty ? l.firstNameRequired : null,
+            errorText: _submitted && _first.text.trim().isEmpty
+                ? l.firstNameRequired
+                : null,
           ),
           onChanged: (_) => setState(() {}),
         ),
@@ -392,7 +443,9 @@ class _PersonalFormState extends State<_PersonalForm> {
           textCapitalization: TextCapitalization.words,
           decoration: InputDecoration(
             labelText: l.lastName,
-            errorText: _submitted && _last.text.trim().isEmpty ? l.lastNameRequired : null,
+            errorText: _submitted && _last.text.trim().isEmpty
+                ? l.lastNameRequired
+                : null,
           ),
           onChanged: (_) => setState(() {}),
         ),
@@ -404,7 +457,9 @@ class _PersonalFormState extends State<_PersonalForm> {
           keyboardType: TextInputType.emailAddress,
           decoration: InputDecoration(
             labelText: l.emailLabel,
-            errorText: _submitted && !isValidOptionalEmail(_email.text.trim()) ? l.emailInvalid : null,
+            errorText: _submitted && !isValidOptionalEmail(_email.text.trim())
+                ? l.emailInvalid
+                : null,
           ),
           onChanged: (_) => setState(() {}),
         ),
@@ -413,10 +468,17 @@ class _PersonalFormState extends State<_PersonalForm> {
           borderRadius: BorderRadius.circular(14),
           onTap: _pickBirthday,
           child: InputDecorator(
-            decoration: InputDecoration(labelText: l.birthday, suffixIcon: const Icon(Icons.calendar_today_outlined, size: 20)),
+            decoration: InputDecoration(
+              labelText: l.birthday,
+              suffixIcon: const Icon(Icons.calendar_today_outlined, size: 20),
+            ),
             child: Text(
-              _birthday == null ? l.birthdayHint : DateFormat('dd / MM / yyyy', locale).format(_birthday!),
-              style: TextStyle(color: _birthday == null ? AppColors.muted : AppColors.ink),
+              _birthday == null
+                  ? l.birthdayHint
+                  : DateFormat('dd / MM / yyyy', locale).format(_birthday!),
+              style: TextStyle(
+                color: _birthday == null ? AppColors.muted : AppColors.ink,
+              ),
             ),
           ),
         ),
@@ -437,10 +499,14 @@ class _PersonalFormState extends State<_PersonalForm> {
           borderRadius: BorderRadius.circular(14),
           onTap: _pickLanguage,
           child: InputDecorator(
-            decoration: InputDecoration(labelText: l.language, suffixIcon: const Icon(Icons.arrow_drop_down_rounded)),
+            decoration: InputDecoration(
+              labelText: l.language,
+              suffixIcon: const Icon(Icons.arrow_drop_down_rounded),
+            ),
             child: ListenableBuilder(
               listenable: context.language,
-              builder: (context, _) => Text(AppLanguage.names[context.language.code] ?? ''),
+              builder: (context, _) =>
+                  Text(AppLanguage.names[context.language.code] ?? ''),
             ),
           ),
         ),
@@ -459,18 +525,6 @@ class _PersonalFormState extends State<_PersonalForm> {
                 await context.push('/settings');
                 await widget.reload();
               },
-            ),
-          ],
-        ),
-        SettingsGroup(
-          title: l.dangerZone,
-          danger: true,
-          children: [
-            SettingsTile(
-              icon: Icons.delete_outline_rounded,
-              title: l.deleteAccount,
-              destructive: true,
-              onTap: () => context.push('/settings/delete'),
             ),
           ],
         ),
@@ -497,13 +551,17 @@ class _EmergencyContactCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (contact == null) ...[
-                  Text(l.emergencyContactHint, style: TextStyle(color: AppColors.muted, height: 1.4)),
+                  Text(
+                    l.emergencyContactHint,
+                    style: TextStyle(color: AppColors.muted, height: 1.4),
+                  ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.add_rounded),
                     label: Text(l.addEmergencyContact),
                     onPressed: () async {
-                      if (await showEmergencyContactSheet(context, null)) await reload();
+                      if (await showEmergencyContactSheet(context, null))
+                        await reload();
                     },
                   ),
                 ] else ...[
@@ -515,9 +573,26 @@ class _EmergencyContactCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(contact.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                            Text(contact.relationship, style: TextStyle(color: AppColors.muted, fontSize: 13)),
-                            Text(prettyPhone(contact.phoneNumber), style: TextStyle(color: AppColors.inkSoft, fontSize: 13)),
+                            Text(
+                              contact.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              contact.relationship,
+                              style: TextStyle(
+                                color: AppColors.muted,
+                                fontSize: 13,
+                              ),
+                            ),
+                            Text(
+                              prettyPhone(contact.phoneNumber),
+                              style: TextStyle(
+                                color: AppColors.inkSoft,
+                                fontSize: 13,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -528,27 +603,36 @@ class _EmergencyContactCard extends StatelessWidget {
                     children: [
                       TextButton(
                         onPressed: () async {
-                          if (await showEmergencyContactSheet(context, contact)) await reload();
+                          if (await showEmergencyContactSheet(context, contact))
+                            await reload();
                         },
                         child: Text(l.edit),
                       ),
                       TextButton(
-                        style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.danger,
+                        ),
                         onPressed: () async {
                           final repo = context.repo;
                           final confirmed = await showDialog<bool>(
                             context: context,
                             builder: (dialogContext) => AlertDialog(
                               title: Text(dialogContext.l10n.removeContactQ),
-                              content: Text(dialogContext.l10n.removeContactBody),
+                              content: Text(
+                                dialogContext.l10n.removeContactBody,
+                              ),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.pop(dialogContext, false),
+                                  onPressed: () =>
+                                      Navigator.pop(dialogContext, false),
                                   child: Text(dialogContext.l10n.cancel),
                                 ),
                                 TextButton(
-                                  style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-                                  onPressed: () => Navigator.pop(dialogContext, true),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppColors.danger,
+                                  ),
+                                  onPressed: () =>
+                                      Navigator.pop(dialogContext, true),
                                   child: Text(dialogContext.l10n.remove),
                                 ),
                               ],
@@ -573,10 +657,15 @@ class _EmergencyContactCard extends StatelessWidget {
 }
 
 /// Add or edit the emergency contact. Returns true when it was saved.
-Future<bool> showEmergencyContactSheet(BuildContext context, EmergencyContact? existing) async {
+Future<bool> showEmergencyContactSheet(
+  BuildContext context,
+  EmergencyContact? existing,
+) async {
   final name = TextEditingController(text: existing?.name);
   final relationship = TextEditingController(text: existing?.relationship);
-  final phone = TextEditingController(text: existing == null ? '' : existing.phoneNumber.replaceFirst('+94', '0'));
+  final phone = TextEditingController(
+    text: existing == null ? '' : existing.phoneNumber.replaceFirst('+94', '0'),
+  );
   var submitted = false;
 
   final saved = await showModalBottomSheet<bool>(
@@ -587,20 +676,30 @@ Future<bool> showEmergencyContactSheet(BuildContext context, EmergencyContact? e
       builder: (sheetContext, setSheetState) {
         final l = sheetContext.l10n;
         return Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 20, MediaQuery.of(sheetContext).viewInsets.bottom + 20),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            0,
+            20,
+            MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+          ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(l.emergencyContact, style: Theme.of(sheetContext).textTheme.titleLarge),
+                Text(
+                  l.emergencyContact,
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 14),
                 TextField(
                   controller: name,
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(
                     labelText: l.contactName,
-                    errorText: submitted && name.text.trim().length < 2 ? l.fieldRequired : null,
+                    errorText: submitted && name.text.trim().length < 2
+                        ? l.fieldRequired
+                        : null,
                   ),
                   onChanged: (_) => setSheetState(() {}),
                 ),
@@ -610,7 +709,9 @@ Future<bool> showEmergencyContactSheet(BuildContext context, EmergencyContact? e
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     labelText: l.relationship,
-                    errorText: submitted && relationship.text.trim().length < 2 ? l.fieldRequired : null,
+                    errorText: submitted && relationship.text.trim().length < 2
+                        ? l.fieldRequired
+                        : null,
                   ),
                   onChanged: (_) => setSheetState(() {}),
                 ),
@@ -618,10 +719,15 @@ Future<bool> showEmergencyContactSheet(BuildContext context, EmergencyContact? e
                 Wrap(
                   spacing: 8,
                   children: [
-                    for (final option in [l.relationshipFamily, l.relationshipFriend, l.relationshipNeighbour])
+                    for (final option in [
+                      l.relationshipFamily,
+                      l.relationshipFriend,
+                      l.relationshipNeighbour,
+                    ])
                       ActionChip(
                         label: Text(option),
-                        onPressed: () => setSheetState(() => relationship.text = option),
+                        onPressed: () =>
+                            setSheetState(() => relationship.text = option),
                       ),
                   ],
                 ),
@@ -633,7 +739,9 @@ Future<bool> showEmergencyContactSheet(BuildContext context, EmergencyContact? e
                   decoration: InputDecoration(
                     labelText: l.mobileNumber,
                     prefixText: '+94  ',
-                    errorText: submitted && toSriLankaE164(phone.text) == null ? l.phoneInvalid : null,
+                    errorText: submitted && toSriLankaE164(phone.text) == null
+                        ? l.phoneInvalid
+                        : null,
                   ),
                   onChanged: (_) => setSheetState(() {}),
                 ),
@@ -643,11 +751,18 @@ Future<bool> showEmergencyContactSheet(BuildContext context, EmergencyContact? e
                   onPressed: () async {
                     setSheetState(() => submitted = true);
                     final e164 = toSriLankaE164(phone.text);
-                    if (name.text.trim().length < 2 || relationship.text.trim().length < 2 || e164 == null) return;
+                    if (name.text.trim().length < 2 ||
+                        relationship.text.trim().length < 2 ||
+                        e164 == null)
+                      return;
                     final repo = sheetContext.repo;
                     final failure = UserMessage(l.profileUpdateError);
                     try {
-                      await repo.saveEmergencyContact(name.text.trim(), relationship.text.trim(), e164);
+                      await repo.saveEmergencyContact(
+                        name.text.trim(),
+                        relationship.text.trim(),
+                        e164,
+                      );
                     } on ApiException {
                       throw failure;
                     }
@@ -664,7 +779,8 @@ Future<bool> showEmergencyContactSheet(BuildContext context, EmergencyContact? e
   name.dispose();
   relationship.dispose();
   phone.dispose();
-  if (saved == true && context.mounted) context.toast(context.l10n.contactSaved);
+  if (saved == true && context.mounted)
+    context.toast(context.l10n.contactSaved);
   return saved == true;
 }
 
@@ -685,7 +801,13 @@ class AppearanceCard extends StatelessWidget {
               children: [
                 const Icon(Icons.contrast_rounded),
                 const SizedBox(width: 16),
-                Text(context.l10n.appearance, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                Text(
+                  context.l10n.appearance,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -716,7 +838,8 @@ class AppearanceCard extends StatelessWidget {
                   ),
                 ],
                 selected: {appearance.mode},
-                onSelectionChanged: (selection) => appearance.setMode(selection.first),
+                onSelectionChanged: (selection) =>
+                    appearance.setMode(selection.first),
               ),
             ),
           ],
@@ -750,7 +873,23 @@ class AdditionalSettingsScreen extends StatelessWidget {
                 title: l.notificationPreferences,
                 onTap: () => context.push('/settings/notifications'),
               ),
-              SettingsTile(icon: Icons.logout_rounded, title: l.logOut, onTap: () => confirmLogout(context)),
+              SettingsTile(
+                icon: Icons.logout_rounded,
+                title: l.logOut,
+                onTap: () => confirmLogout(context),
+              ),
+            ],
+          ),
+          SettingsGroup(
+            title: l.dangerZone,
+            danger: true,
+            children: [
+              SettingsTile(
+                icon: Icons.delete_outline_rounded,
+                title: l.deleteAccount,
+                destructive: true,
+                onTap: () => context.push('/settings/delete'),
+              ),
             ],
           ),
         ],

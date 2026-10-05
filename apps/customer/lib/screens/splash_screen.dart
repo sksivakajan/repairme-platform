@@ -19,22 +19,13 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 2600),
   )..addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        widget.onFinished?.call();
-        // If the app is still loading behind this screen, keep the logo breathing.
-        if (mounted && !MediaQuery.of(context).disableAnimations) _pulse.repeat(reverse: true);
-      }
+      if (status == AnimationStatus.completed) widget.onFinished?.call();
     });
-
-  late final AnimationController _pulse = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1000),
-  );
 
   late final _logo = _interval(0, 0.62, Curves.linear);
   late final _wordmark = _interval(0.46, 0.7);
@@ -61,7 +52,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void dispose() {
     _controller.dispose();
-    _pulse.dispose();
     super.dispose();
   }
 
@@ -72,17 +62,14 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       child: Scaffold(
         backgroundColor: Colors.white,
         body: AnimatedBuilder(
-          animation: Listenable.merge([_controller, _pulse]),
+          animation: _controller,
           builder: (context, _) => Stack(
             children: [
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Transform.scale(
-                      scale: 1 + 0.05 * Curves.easeInOut.transform(_pulse.value),
-                      child: RepairMeLogo(size: 116, palette: LogoPalette.onLight, progress: _logo.value),
-                    ),
+                    RepairMeLogo(size: 116, palette: LogoPalette.onLight, progress: _logo.value),
                     const SizedBox(height: 18),
                     Opacity(
                       opacity: _wordmark.value,

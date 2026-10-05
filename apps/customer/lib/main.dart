@@ -17,16 +17,22 @@ Future<void> main() async {
     await Firebase.initializeApp(options: Env.firebaseOptions);
   }
 
-  await initializeDateFormatting();
+  // Only the three languages the app has, not all ~400 that the date library knows.
+  await Future.wait([for (final locale in const ['en', 'si', 'ta']) initializeDateFormatting(locale)]);
   final prefs = await SharedPreferences.getInstance();
   final session = Session(prefs);
   final repo = Repository(ApiClient(authHeader: session.authHeader));
   // After the number is verified, the server says whether it already has an account.
   session.accountChecker = () async {
     final profile = await repo.profile();
+    repo.primeProfile(profile); // Home reuses this instead of asking again
     if (!profile.profileComplete) return AccountStage.needsProfile;
     return profile.pendingLegal.isEmpty ? AccountStage.ready : AccountStage.needsTerms;
   };
+  // Nothing cached for one customer may be shown to the next.
+  session.addListener(() {
+    if (session.status == SessionStatus.signedOut) repo.clearCache();
+  });
   session.start();
   runApp(RepairMeApp(
     session: session,

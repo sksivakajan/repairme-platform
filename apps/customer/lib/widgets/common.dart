@@ -139,9 +139,10 @@ class _AsyncViewState<T> extends State<AsyncView<T>> {
           return ErrorState(error: snapshot.error!, onRetry: _reload);
         }
         if (data == null) {
-          return const Center(child: LogoLoader());
+          return const Center(child: DotsLoader());
         }
-        return widget.builder(context, data, _reload);
+        // The content fades in once, when the data first arrives.
+        return FadeSlideIn(end: 0.45, offset: Offset.zero, child: widget.builder(context, data, _reload));
       },
     );
   }

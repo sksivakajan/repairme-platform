@@ -27,7 +27,13 @@ import 'theme/app_theme.dart';
 import 'widgets/common.dart';
 
 class RepairMeApp extends StatefulWidget {
-  const RepairMeApp({super.key, required this.session, required this.repo, required this.appearance, required this.language});
+  const RepairMeApp({
+    super.key,
+    required this.session,
+    required this.repo,
+    required this.appearance,
+    required this.language,
+  });
 
   final Session session;
   final Repository repo;
@@ -110,24 +116,32 @@ class _RepairMeAppState extends State<RepairMeApp> with WidgetsBindingObserver {
 const _authRoutes = {'/onboarding', '/phone', '/otp'};
 
 /// Fades in, used for the screens that replace the splash.
-Page<void> _fade(GoRouterState state, Widget child) => CustomTransitionPage<void>(
+Page<void> _fade(GoRouterState state, Widget child) =>
+    CustomTransitionPage<void>(
       key: state.pageKey,
       child: child,
       transitionDuration: const Duration(milliseconds: 400),
-      transitionsBuilder: (context, animation, _, child) => FadeTransition(opacity: animation, child: child),
+      transitionsBuilder: (context, animation, _, child) =>
+          FadeTransition(opacity: animation, child: child),
     );
 
 GoRouter _buildRouter(Session session, ValueNotifier<bool> splashDone) {
   /// Request screens receive the draft through `extra`; without it (e.g. after
   /// a process restart) send the customer back home.
-  GoRoute requestRoute(String path, Widget Function(BookingDraft draft) build) => GoRoute(
-        path: path,
-        redirect: (context, state) => state.extra is BookingDraft ? null : '/home',
-        builder: (context, state) => build(state.extra! as BookingDraft),
-      );
+  GoRoute requestRoute(
+    String path,
+    Widget Function(BookingDraft draft) build,
+  ) => GoRoute(
+    path: path,
+    redirect: (context, state) => state.extra is BookingDraft ? null : '/home',
+    builder: (context, state) => build(state.extra! as BookingDraft),
+  );
 
   GoRoute bookingRoute(String path, Widget Function(String id) build) =>
-      GoRoute(path: path, builder: (context, state) => build(state.pathParameters['id']!));
+      GoRoute(
+        path: path,
+        builder: (context, state) => build(state.pathParameters['id']!),
+      );
 
   return GoRouter(
     initialLocation: '/splash',
@@ -169,23 +183,70 @@ GoRouter _buildRouter(Session session, ValueNotifier<bool> splashDone) {
     routes: [
       GoRoute(
         path: '/splash',
-        pageBuilder: (context, state) => _fade(state, SplashScreen(onFinished: () => splashDone.value = true)),
+        pageBuilder: (context, state) => _fade(
+          state,
+          SplashScreen(onFinished: () => splashDone.value = true),
+        ),
       ),
-      GoRoute(path: '/onboarding', pageBuilder: (context, state) => _fade(state, const OnboardingScreen())),
-      GoRoute(path: '/phone', pageBuilder: (context, state) => _fade(state, const PhoneScreen())),
+      GoRoute(
+        path: '/onboarding',
+        pageBuilder: (context, state) => _fade(state, const OnboardingScreen()),
+      ),
+      GoRoute(
+        path: '/phone',
+        pageBuilder: (context, state) => _fade(state, const PhoneScreen()),
+      ),
       GoRoute(path: '/otp', builder: (_, _) => const OtpScreen()),
-      GoRoute(path: '/complete-profile', builder: (_, _) => const CompleteProfileScreen()),
+      GoRoute(
+        path: '/complete-profile',
+        builder: (_, _) => const CompleteProfileScreen(),
+      ),
       GoRoute(path: '/offline', builder: (_, _) => const OfflineScreen()),
-      GoRoute(path: '/accept-terms', builder: (_, _) => const AcceptTermsScreen()),
+      GoRoute(
+        path: '/accept-terms',
+        builder: (_, _) => const AcceptTermsScreen(),
+      ),
       GoRoute(path: '/legal', builder: (_, _) => const LegalPrivacyScreen()),
-      GoRoute(path: '/legal/:type', builder: (_, state) => LegalDocumentScreen(type: state.pathParameters['type']!)),
-      StatefulShellRoute.indexedStack(
-        pageBuilder: (context, state, shell) => _fade(state, HomeShell(shell: shell)),
+      GoRoute(
+        path: '/legal/:type',
+        builder: (_, state) =>
+            LegalDocumentScreen(type: state.pathParameters['type']!),
+      ),
+      StatefulShellRoute(
+        pageBuilder: (context, state, shell) =>
+            _fade(state, HomeShell(shell: shell)),
+        navigatorContainerBuilder: (context, shell, children) =>
+            FadeBranches(currentIndex: shell.currentIndex, children: children),
         branches: [
-          StatefulShellBranch(routes: [GoRoute(path: '/home', builder: (_, _) => const HomeScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/bookings', builder: (_, _) => const BookingsScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/messages', builder: (_, _) => const MessagesScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen())]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/bookings',
+                builder: (_, _) => const BookingsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/messages',
+                builder: (_, _) => const MessagesScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (_, _) => const ProfileScreen(),
+              ),
+            ],
+          ),
         ],
       ),
       GoRoute(
@@ -195,42 +256,90 @@ GoRouter _buildRouter(Session session, ValueNotifier<bool> splashDone) {
           focusSearch: state.uri.queryParameters['search'] == '1',
         ),
       ),
-      GoRoute(path: '/technicians', builder: (_, _) => const TopTechniciansScreen()),
+      GoRoute(
+        path: '/technicians',
+        builder: (_, _) => const TopTechniciansScreen(),
+      ),
       GoRoute(path: '/support', builder: (_, _) => const HelpSupportScreen()),
       GoRoute(path: '/support/faq', builder: (_, _) => const FaqScreen()),
-      GoRoute(path: '/support/contact', builder: (_, _) => const ContactSupportScreen()),
-      GoRoute(path: '/support/requests', builder: (_, _) => const SupportRequestsScreen()),
+      GoRoute(
+        path: '/support/contact',
+        builder: (_, _) => const ContactSupportScreen(),
+      ),
+      GoRoute(
+        path: '/support/requests',
+        builder: (_, _) => const SupportRequestsScreen(),
+      ),
       GoRoute(path: '/about', builder: (_, _) => const AboutScreen()),
-      GoRoute(path: '/profile/personal', builder: (_, _) => const PersonalInformationScreen()),
-      GoRoute(path: '/profile/membership', builder: (_, _) => const MembershipScreen()),
-      GoRoute(path: '/profile/payments', builder: (_, _) => const PaymentMethodsScreen()),
-      GoRoute(path: '/settings', builder: (_, _) => const AdditionalSettingsScreen()),
-      GoRoute(path: '/settings/phone', builder: (_, _) => const ChangePhoneScreen()),
-      GoRoute(path: '/settings/notifications', builder: (_, _) => const NotificationPreferencesScreen()),
-      GoRoute(path: '/settings/delete', builder: (_, _) => const DeleteAccountScreen()),
+      GoRoute(
+        path: '/profile/personal',
+        builder: (_, _) => const PersonalInformationScreen(),
+      ),
+      GoRoute(
+        path: '/profile/membership',
+        builder: (_, _) => const MembershipScreen(),
+      ),
+      GoRoute(
+        path: '/profile/payments',
+        builder: (_, _) => const PaymentMethodsScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (_, _) => const AdditionalSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/phone',
+        builder: (_, _) => const ChangePhoneScreen(),
+      ),
+      GoRoute(
+        path: '/settings/notifications',
+        builder: (_, _) => const NotificationPreferencesScreen(),
+      ),
+      GoRoute(
+        path: '/settings/delete',
+        builder: (_, _) => const DeleteAccountScreen(),
+      ),
       GoRoute(
         path: '/settings/delete/confirm',
-        redirect: (context, state) => state.extra is DeleteRequest ? null : '/profile/personal',
-        builder: (_, state) => DeleteConfirmScreen(request: state.extra! as DeleteRequest),
+        redirect: (context, state) =>
+            state.extra is DeleteRequest ? null : '/profile/personal',
+        builder: (_, state) =>
+            DeleteConfirmScreen(request: state.extra! as DeleteRequest),
       ),
       GoRoute(
         path: '/settings/delete/otp',
-        redirect: (context, state) => state.extra is DeleteRequest ? null : '/profile/personal',
-        builder: (_, state) => DeleteOtpScreen(request: state.extra! as DeleteRequest),
+        redirect: (context, state) =>
+            state.extra is DeleteRequest ? null : '/profile/personal',
+        builder: (_, state) =>
+            DeleteOtpScreen(request: state.extra! as DeleteRequest),
       ),
-      GoRoute(path: '/notifications', builder: (_, _) => const NotificationsScreen()),
+      GoRoute(
+        path: '/notifications',
+        builder: (_, _) => const NotificationsScreen(),
+      ),
       GoRoute(path: '/addresses', builder: (_, _) => const AddressesScreen()),
-      GoRoute(path: '/addresses/new', builder: (_, _) => const AddressFormScreen()),
+      GoRoute(
+        path: '/addresses/new',
+        builder: (_, _) => const AddressFormScreen(),
+      ),
       GoRoute(
         path: '/addresses/edit',
-        redirect: (context, state) => state.extra is SavedAddress ? null : '/addresses',
-        builder: (_, state) => AddressFormScreen(existing: state.extra! as SavedAddress),
+        redirect: (context, state) =>
+            state.extra is SavedAddress ? null : '/addresses',
+        builder: (_, state) =>
+            AddressFormScreen(existing: state.extra! as SavedAddress),
       ),
       requestRoute('/request/type', (draft) => BookingTypeScreen(draft: draft)),
       requestRoute('/request/details', (draft) => DetailsScreen(draft: draft)),
       requestRoute('/request/photos', (draft) => PhotosScreen(draft: draft)),
-      requestRoute('/request/location', (draft) => LocationScreen(draft: draft)),
-      requestRoute('/request/datetime', (draft) => DateTimeScreen(draft: draft)),
+      requestRoute(
+        '/request/location',
+        (draft) => LocationScreen(draft: draft),
+      ),
+      requestRoute(
+        '/request/datetime',
+        (draft) => DateTimeScreen(draft: draft),
+      ),
       requestRoute('/request/review', (draft) => ReviewScreen(draft: draft)),
       bookingRoute('/booking/:id', (id) => BookingScreen(id: id)),
       bookingRoute('/booking/:id/status', (id) => JobStatusScreen(id: id)),
@@ -243,11 +352,48 @@ GoRouter _buildRouter(Session session, ValueNotifier<bool> splashDone) {
   );
 }
 
+/// The bottom-tab pages, kept alive side by side (so each keeps its place) and
+/// cross-faded when the customer switches tab.
+class FadeBranches extends StatelessWidget {
+  const FadeBranches({required this.currentIndex, required this.children});
+
+  final int currentIndex;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        for (final (i, child) in children.indexed)
+          ExcludeSemantics(
+            excluding: i != currentIndex,
+            child: IgnorePointer(
+              ignoring: i != currentIndex,
+              // The fade lives outside TickerMode: a paused (hidden) tab must still be
+              // able to finish fading out.
+              child: AnimatedOpacity(
+                opacity: i == currentIndex ? 1 : 0,
+                duration: const Duration(milliseconds: 240),
+                curve: Curves.easeOut,
+                child: TickerMode(enabled: i == currentIndex, child: child),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 /// Keeps screens still at the scroll edges: no Android stretch effect when
 /// pulling down (pull-to-refresh only shows its spinner).
 class _NoStretchScrollBehavior extends MaterialScrollBehavior {
   const _NoStretchScrollBehavior();
 
   @override
-  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
 }
